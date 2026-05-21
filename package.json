@@ -1,18 +1,46 @@
 {
   "name": "stateless-seal",
-  "version": "1.0.0",
-  "description": "Simple and secure stateless session system with **AES-GCM encryption**. No JWT. No database.",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "Purpose-bound sealed tokens for JavaScript.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsup",
+    "test": "vitest run",
+    "dev:test": "vitest",
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arfoux/stateless-encryption-session.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "token",
+    "sealed-token",
+    "stateless",
+    "encryption",
+    "aes-gcm",
+    "webcrypto",
+    "purpose-bound",
+    "session",
+    "security"
+  ],
+  "author": "Fatih Farros",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/arfoux/stateless-encryption-session/issues"
   },
@@ -20,7 +48,7 @@
   "devDependencies": {
     "@types/node": "^25.9.1",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.7"
   }
 }
