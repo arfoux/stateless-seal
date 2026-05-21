@@ -1,4 +1,4 @@
-import type { SealerConfig, TokenPolicy } from "./types";
+import type { SealerConfig, TokenDefinition, TokenPolicy } from "./types";
 import { defineToken } from "./define-token";
 import { SealError } from "./errors";
 
@@ -8,7 +8,9 @@ export function createSealer(config: SealerConfig) {
   const clock = config.clock ?? (() => Date.now());
 
   return {
-    defineToken<TPayload = unknown>(policy: TokenPolicy) {
+    defineToken<TPayload = unknown>(
+      policy: TokenPolicy<TPayload>
+    ): TokenDefinition<TPayload> {
       return defineToken<TPayload>(
         {
           issuer: config.issuer,

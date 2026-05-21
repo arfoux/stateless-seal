@@ -254,6 +254,10 @@ type TokenPolicy = {
   purpose: string;
   ttl: string | number;
   audience?: string;
+  schema?: TokenSchema<TPayload>;
+  maxTokenSize?: number;
+  clockTolerance?: string | number;
+  notBefore?: string | number;
 };
 ```
 
@@ -277,11 +281,32 @@ ttl: "7d"
 ttl: 60000
 ```
 
+Additional policy options:
+
+- `schema` validates payloads while sealing and after decrypting
+- `maxTokenSize` rejects oversized tokens before parsing or decrypting
+- `clockTolerance` allows small clock skew for `exp` and `nbf`
+- `notBefore` sets a default relative activation delay for newly sealed tokens
+
+`schema` is structural. Zod-style schemas work without making Zod a required dependency:
+
+```ts
+const SessionToken = sealer.defineToken({
+  purpose: "session",
+  ttl: "1h",
+  audience: "web",
+  schema: z.object({
+    userId: z.string(),
+    role: z.enum(["user", "admin"])
+  })
+});
+```
+
 ---
 
 ## Token methods
 
-### `Token.seal(payload)`
+### `Token.seal(payload, options?)`
 
 Encrypts and seals a payload.
 
@@ -290,6 +315,15 @@ const token = await SessionToken.seal({
   userId: "user_123",
   role: "admin"
 });
+```
+
+Use `notBefore` when a token should not be accepted immediately:
+
+```ts
+const token = await SessionToken.seal(
+  { userId: "user_123" },
+  { notBefore: "30s" }
+);
 ```
 
 ---
@@ -328,12 +362,16 @@ Possible error codes:
 ```txt
 invalid_config
 invalid_policy
+invalid_options
 malformed_token
 unsupported_version
 unsupported_algorithm
 unknown_kid
 decrypt_failed
 expired
+not_yet_valid
+token_too_large
+schema_validation_failed
 purpose_mismatch
 issuer_mismatch
 audience_mismatch
@@ -347,6 +385,20 @@ Like `unseal()`, but throws a `SealError` if the token is invalid.
 
 ```ts
 const payload = await SessionToken.unsealOrThrow(token);
+```
+
+---
+
+### `Token.unsealOrNull(token)`
+
+Like `unseal()`, but returns `null` instead of a Result object when the token is invalid.
+
+```ts
+const payload = await SessionToken.unsealOrNull(token);
+
+if (!payload) {
+  // reject request
+}
 ```
 
 ---
@@ -379,9 +431,38 @@ Use `unseal()` to verify and decrypt the token.
 
 ---
 
+## Cookie helpers
+
+Cookie helpers are small, dependency-free utilities for edge runtimes.
+
+```ts
+import {
+  clearCookie,
+  getCookie,
+  parseCookies,
+  serializeCookie
+} from "stateless-seal";
+```
+
+```ts
+const header = serializeCookie("session", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Strict",
+  path: "/",
+  maxAge: 3600
+});
+
+const tokenFromCookie = getCookie(request.headers.get("Cookie"), "session");
+```
+
+`maxAge` is expressed in seconds, following the `Set-Cookie` `Max-Age` attribute.
+
+---
+
 ## Token format
 
-`stateless-seal` v0.1 uses this format:
+`stateless-seal` uses this v1 token format:
 
 ```txt
 stseal.v1.<header>.<iv>.<ciphertext>
@@ -439,6 +520,7 @@ The encrypted body contains internal claims and your payload:
 {
   "iat": 1779340000000,
   "exp": 1779340900000,
+  "nbf": 1779340030000,
   "data": {
     "userId": "user_123"
   }
@@ -447,9 +529,12 @@ The encrypted body contains internal claims and your payload:
 
 Fields:
 
-- `iat` — issued-at timestamp in milliseconds
-- `exp` — expiration timestamp in milliseconds
-- `data` — your encrypted payload
+- `iat` - issued-at timestamp in milliseconds
+- `exp` - expiration timestamp in milliseconds
+- `nbf` - optional not-before timestamp in milliseconds
+- `data` - your encrypted payload
+
+`nbf` is present only when `notBefore` is configured in the policy or passed to `Token.seal()`.
 
 ---
 
@@ -790,15 +875,29 @@ const token = await SessionToken.seal({
 });
 ```
 
-Set it as an HTTP-only cookie:
+Set it as an HTTP-only cookie with the edge-safe helper:
 
-```txt
-Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Strict; Path=/
+```ts
+import { getCookie, serializeCookie } from "stateless-seal";
+
+const setCookie = serializeCookie("session", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "Strict",
+  path: "/",
+  maxAge: 60 * 60
+});
 ```
 
 Then unseal it on each request:
 
 ```ts
+const tokenFromCookie = getCookie(request.headers.get("Cookie"), "session");
+
+if (!tokenFromCookie) {
+  throw new Error("Missing session cookie.");
+}
+
 const result = await SessionToken.unseal(tokenFromCookie);
 
 if (!result.ok) {
@@ -839,11 +938,38 @@ if (result.ok) {
 }
 ```
 
+Schemas can also drive the payload type:
+
+```ts
+const SessionToken = sealer.defineToken({
+  purpose: "session",
+  ttl: "1h",
+  schema: {
+    parse(input: unknown): { userId: string } {
+      if (
+        !input ||
+        typeof input !== "object" ||
+        typeof (input as { userId?: unknown }).userId !== "string"
+      ) {
+        throw new Error("Invalid payload.");
+      }
+
+      return {
+        userId: (input as { userId: string }).userId
+      };
+    }
+  }
+});
+
+const payload = await SessionToken.unsealOrThrow(token);
+payload.userId;
+```
+
 ---
 
 ## Current status
 
-This is v0.1.
+This is v0.2.
 
 Included:
 
@@ -852,7 +978,14 @@ Included:
 - `Token.seal()`
 - `Token.unseal()`
 - `Token.unsealOrThrow()`
+- `Token.unsealOrNull()`
 - `Token.inspect()`
+- schema validation
+- Zod-compatible schema support without a required Zod dependency
+- `maxTokenSize`
+- `clockTolerance`
+- `notBefore` / encrypted `nbf`
+- edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
 - purpose binding
@@ -865,11 +998,8 @@ Included:
 
 Not included yet:
 
-- schema validation
-- Zod adapter
 - replay protection
 - Redis/Upstash replay store
-- cookie helper
 - refresh token flow
 - CLI
 
@@ -892,10 +1022,11 @@ Core sealed token engine.
 Developer experience.
 
 - schema validation
-- Zod-compatible adapter
+- Zod-compatible schema support
 - cookie helper
 - `unsealOrNull()`
-- better examples
+- `clockTolerance`
+- `notBefore` / `nbf`
 - stricter token size controls
 
 ### v1.0
