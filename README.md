@@ -110,14 +110,20 @@ npm install stateless-seal
 
 `stateless-seal` uses the Web Crypto API.
 
-Supported runtimes:
+## Edge runtime support
 
-- Node.js 18+
-- Bun
-- Deno
+`stateless-seal` core is designed to run on Web Crypto based runtimes.
+
+The core does not depend on Node.js runtime APIs such as `crypto`, `fs`, `path`, `os`, or `Buffer`.
+
+Supported targets include:
+
 - Cloudflare Workers
 - Vercel Edge
-- modern browsers with Web Crypto support
+- Deno
+- Bun
+- Node.js 18+
+- modern browsers with Web Crypto
 
 ---
 
