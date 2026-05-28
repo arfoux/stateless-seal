@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.1
+
+- Add `stateless-seal/cloudflare` subpath export.
+- Add `cloudflareKVReplayStore()` for Cloudflare Workers KV replay markers.
+- Add Workers KV replay store tests with a KV-like fake.
+- Add Cloudflare Workers one-time token recipe.
+- Include Cloudflare replay store guidance in docs.
+- Clamp Workers KV replay marker TTLs to the KV minimum.
+
 ## 0.3.0
 
 - Add one-time token policies with encrypted `jti`.
@@ -34,4 +43,3 @@
 - Purpose, issuer, and audience binding.
 - Key rotation through `kid`.
 - Edge runtime compatibility hardening.
-

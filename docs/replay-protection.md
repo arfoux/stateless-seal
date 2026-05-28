@@ -107,8 +107,22 @@ It is not a production replay store for multi-instance deployments. Each
 process has its own memory, so another server instance would not know the token
 was already consumed.
 
-Production adapters should use a shared atomic store such as Cloudflare KV,
-Redis, Upstash, Deno KV, or a database table with a unique constraint.
+Production adapters should use a shared store such as Cloudflare KV, Redis,
+Upstash, Deno KV, a database table with a unique constraint, or a Cloudflare
+Durable Object.
+
+Cloudflare KV support is available through:
+
+```ts
+import { cloudflareKVReplayStore } from "stateless-seal/cloudflare";
+```
+
+See [cloudflare-workers.md](./cloudflare-workers.md).
+
+Cloudflare KV is eventually consistent. It is a simple shared edge replay store,
+but it is not a strict global atomic consume primitive under simultaneous
+submissions. Use a strongly consistent store for high-value flows that require
+exactly-once behavior under concurrency.
 
 ## Production Rules
 
@@ -117,4 +131,3 @@ Redis, Upstash, Deno KV, or a database table with a unique constraint.
 - Treat replay store failures as token rejection.
 - Do not expose `replayed` or `replay_store_failed` to end users.
 - Keep detailed rejection codes in internal logs only.
-

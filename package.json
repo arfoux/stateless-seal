@@ -1,6 +1,6 @@
 {
   "name": "stateless-seal",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Purpose-bound sealed tokens for JavaScript.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -11,6 +11,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./cloudflare": {
+      "types": "./dist/cloudflare.d.ts",
+      "import": "./dist/cloudflare.js",
+      "require": "./dist/cloudflare.cjs"
     }
   },
   "files": [
@@ -21,6 +26,7 @@
     "TEST-VECTORS.md",
     "CHANGELOG.md",
     "docs",
+    "examples",
     "test-vectors",
     "README.md",
     "LICENSE"

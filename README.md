@@ -159,6 +159,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
+- [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
 - [CHANGELOG.md](./CHANGELOG.md) - release history
 
 ---
@@ -479,6 +480,16 @@ payload is accepted.
 
 `memoryReplayStore()` is intended for tests, local development, and
 single-process demos. Production multi-instance apps should use a shared store.
+
+Cloudflare Workers can use the subpath adapter:
+
+```ts
+import { cloudflareKVReplayStore } from "stateless-seal/cloudflare";
+
+const result = await MagicLinkToken.unsealOnce(token, {
+  store: cloudflareKVReplayStore(env.REPLAY_KV)
+});
+```
 
 ---
 
@@ -1059,7 +1070,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.3.0.
+This is v0.3.1.
 
 Included:
 
@@ -1082,6 +1093,7 @@ Included:
 - `oneTime` / encrypted `jti`
 - `ReplayStore`
 - `memoryReplayStore()`
+- `cloudflareKVReplayStore()`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1096,7 +1108,7 @@ Included:
 Not included yet:
 
 - Redis/Upstash replay store
-- Cloudflare KV replay store
+- strongly consistent Cloudflare Durable Object replay store
 - refresh token flow
 - CLI
 
@@ -1135,6 +1147,7 @@ One-time token flows.
 - `ReplayStore` interface
 - `Token.unsealOnce()`
 - `memoryReplayStore()`
+- Cloudflare Workers KV replay store
 
 ### v1.0
 
