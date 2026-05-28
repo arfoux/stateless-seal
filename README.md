@@ -1,14 +1,17 @@
 # stateless-seal
 
-Purpose-bound sealed tokens for JavaScript.
+Encrypted, purpose-bound, stateless tokens for JavaScript runtimes.
 
-`stateless-seal` is a small, runtime-friendly sealed token engine for creating encrypted, tamper-proof, short-lived tokens with explicit purpose, issuer, audience, expiry, and key rotation.
+Use it when your app needs a short-lived private token: password reset, magic
+links, email verification, invite links, temporary grants, session cookies, and
+internal handoff tokens.
 
-It is not a JWT replacement.  
-It is not a new token standard.  
-It is not just a session library.
+Stateless Seal creates compact AES-GCM sealed tokens with explicit purpose,
+issuer, audience, expiry, and key rotation.
 
-It is a practical encrypted token primitive for JavaScript apps.
+A token sealed for `password-reset` cannot be opened as `session`. A token
+sealed for `web` cannot be opened as `api`. The payload is encrypted, not just
+signed.
 
 ```ts
 import { createSealer } from "stateless-seal";
@@ -124,6 +127,17 @@ Supported targets include:
 - Bun
 - Node.js 18+
 - modern browsers with Web Crypto
+
+---
+
+## Protocol and security docs
+
+`stateless-seal` is maintained as a small SDK plus a documented token format.
+
+- [SPEC.md](./SPEC.md) - Stateless Seal v1 token format
+- [TEST-VECTORS.md](./TEST-VECTORS.md) - official compatibility vectors
+- [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
+- [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 
 ---
 

@@ -1,0 +1,39 @@
+{
+  "name": "valid basic token",
+  "version": "v1",
+  "description": "A valid token without an audience header.",
+  "keyId": "2026-05",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "iv": "ICEiIyQlJicoKSor",
+  "issuer": "example-app",
+  "purpose": "password-reset",
+  "now": 1779340000000,
+  "payload": {
+    "userId": "user_123"
+  },
+  "token": "stseal.v1.eyJhbGciOiJBMjU2R0NNIiwia2lkIjoiMjAyNi0wNSIsInB1ciI6InBhc3N3b3JkLXJlc2V0IiwiaXNzIjoiZXhhbXBsZS1hcHAifQ.ICEiIyQlJicoKSor.qRjPERi6ID8tS3v99SjEyeB53KyrogaWHNRWI369ZzpBvtw0vhUF6jjfCvMsaD3ymQiZ_f9OZAXsWF1oP9d4gukU_inr6rwLgcMoq10KSjzOg6B9C7I",
+  "verify": {
+    "issuer": "example-app",
+    "purpose": "password-reset",
+    "now": 1779340000000,
+    "keys": {
+      "2026-05": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+    },
+    "currentKeyId": "2026-05"
+  },
+  "expected": {
+    "ok": true,
+    "payload": {
+      "userId": "user_123"
+    },
+    "meta": {
+      "version": "v1",
+      "algorithm": "A256GCM",
+      "keyId": "2026-05",
+      "purpose": "password-reset",
+      "issuer": "example-app",
+      "issuedAt": 1779340000000,
+      "expiresAt": 1779340900000
+    }
+  }
+}

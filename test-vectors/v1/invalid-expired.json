@@ -1,0 +1,30 @@
+{
+  "name": "invalid expired token",
+  "version": "v1",
+  "description": "A token rejected after its exp timestamp.",
+  "keyId": "2026-05",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "iv": "ICEiIyQlJicoKSor",
+  "issuer": "example-app",
+  "purpose": "password-reset",
+  "audience": "web",
+  "now": 1779340900001,
+  "payload": {
+    "userId": "user_123"
+  },
+  "token": "stseal.v1.eyJhbGciOiJBMjU2R0NNIiwia2lkIjoiMjAyNi0wNSIsInB1ciI6InBhc3N3b3JkLXJlc2V0IiwiaXNzIjoiZXhhbXBsZS1hcHAiLCJhdWQiOiJ3ZWIifQ.ICEiIyQlJicoKSor.qRjPERi6ID8tS3v99SjEyeB53KyrogaWHNRWI369ZzpBvtw0vhUF6jjfCvMsaD3ymQiZ_f9OZAXsWF1oP9d4gukU_inr6nF-AXdUdiEzDRz0fj_IAgM",
+  "verify": {
+    "issuer": "example-app",
+    "purpose": "password-reset",
+    "audience": "web",
+    "now": 1779340900001,
+    "keys": {
+      "2026-05": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+    },
+    "currentKeyId": "2026-05"
+  },
+  "expected": {
+    "ok": false,
+    "code": "expired"
+  }
+}
