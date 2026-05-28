@@ -7,6 +7,7 @@ export type SealerConfig = {
   issuer: string;
   keys: Keyring;
   currentKeyId: string;
+  maxTokenSize?: number;
   clock?: () => number;
 };
 
@@ -74,6 +75,7 @@ export type SealErrorCode =
   | "invalid_config"
   | "invalid_policy"
   | "invalid_options"
+  | "invalid_key"
   | "malformed_token"
   | "unsupported_version"
   | "unsupported_algorithm"

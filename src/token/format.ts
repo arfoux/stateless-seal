@@ -1,5 +1,11 @@
 import type { ParsedToken, TokenHeader } from "../core/types";
 import {
+  isValidAudience,
+  isValidIssuer,
+  isValidKeyId,
+  isValidPurpose
+} from "../core/validation";
+import {
   base64urlDecode,
   base64urlDecodeJson,
   base64urlEncode,
@@ -83,9 +89,9 @@ function isValidHeader(header: unknown): header is TokenHeader {
 
   return (
     value.alg === "A256GCM" &&
-    typeof value.kid === "string" &&
-    typeof value.pur === "string" &&
-    typeof value.iss === "string" &&
-    (value.aud === undefined || typeof value.aud === "string")
+    isValidKeyId(value.kid) &&
+    isValidPurpose(value.pur) &&
+    isValidIssuer(value.iss) &&
+    (value.aud === undefined || isValidAudience(value.aud))
   );
 }

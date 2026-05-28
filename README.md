@@ -130,6 +130,26 @@ Supported targets include:
 
 ---
 
+## Hardening defaults
+
+The SDK rejects unusually large tokens by default before parsing or decrypting.
+The default limit is `16 * 1024` bytes.
+
+Identifiers are intentionally constrained:
+
+- `kid`: 1-128 safe identifier characters
+- `purpose`: 1-128 lowercase safe identifier characters
+- `issuer`: 1-256 safe identifier characters
+- `audience`: 1-256 safe identifier characters
+
+Safe identifier characters are ASCII letters, digits, `.`, `_`, `:`, `/`, `@`,
+and `-`. Purpose values must start with a lowercase letter or digit and may use
+lowercase letters, digits, `.`, `_`, `:`, and `-`.
+
+These limits are guardrails for logs, headers, and edge runtimes.
+
+---
+
 ## Protocol and security docs
 
 `stateless-seal` is maintained as a small SDK plus a documented token format.
@@ -245,9 +265,13 @@ type SealerConfig = {
   issuer: string;
   keys: Record<string, string | Uint8Array | CryptoKey>;
   currentKeyId: string;
+  maxTokenSize?: number;
   clock?: () => number;
 };
 ```
+
+`maxTokenSize` defaults to `16 * 1024` bytes. Token policies may set a smaller
+limit for sensitive flows, but they cannot exceed the sealer-level limit.
 
 ### `sealer.defineToken(policy)`
 
@@ -298,7 +322,8 @@ ttl: 60000
 Additional policy options:
 
 - `schema` validates payloads while sealing and after decrypting
-- `maxTokenSize` rejects oversized tokens before parsing or decrypting
+- `maxTokenSize` rejects oversized tokens before parsing or decrypting; it must
+  be less than or equal to the sealer limit
 - `clockTolerance` allows small clock skew for `exp` and `nbf`
 - `notBefore` sets a default relative activation delay for newly sealed tokens
 
@@ -377,6 +402,7 @@ Possible error codes:
 invalid_config
 invalid_policy
 invalid_options
+invalid_key
 malformed_token
 unsupported_version
 unsupported_algorithm
@@ -983,7 +1009,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.2.
+This is v0.2.1.
 
 Included:
 
@@ -997,6 +1023,9 @@ Included:
 - schema validation
 - Zod-compatible schema support without a required Zod dependency
 - `maxTokenSize`
+- default global token size limit
+- strict identifier validation
+- explicit `invalid_key` handling
 - `clockTolerance`
 - `notBefore` / encrypted `nbf`
 - edge-safe cookie helpers

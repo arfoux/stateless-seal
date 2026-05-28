@@ -1,4 +1,4 @@
-export { createSealer } from "./core/create-sealer";
+export { DEFAULT_MAX_TOKEN_SIZE, createSealer } from "./core/create-sealer";
 export { SealError } from "./core/errors";
 export { generateSealKey } from "./crypto/keys";
 export { clearCookie, getCookie, parseCookies, serializeCookie } from "./cookie";

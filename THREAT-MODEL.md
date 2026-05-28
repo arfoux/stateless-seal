@@ -117,8 +117,10 @@ If a key leaks, tokens sealed with that key should be considered compromised.
 
 ## Token Size
 
-Applications should configure token size limits for their use case. Large tokens
-can waste CPU and memory during parsing, decoding, and decryption.
+The SDK rejects tokens larger than 16 KiB by default before parsing or
+decrypting. Applications should configure smaller token size limits for
+sensitive flows. Large tokens can waste CPU and memory during parsing, decoding,
+and decryption.
 
 Recommended starting points:
 
@@ -159,4 +161,3 @@ Future versions should extend this document for:
 - context binding
 - external associated data
 - CLI operational safety
-

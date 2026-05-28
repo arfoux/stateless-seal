@@ -87,6 +87,15 @@ Fields:
 The header MUST NOT contain sensitive data. It can be decoded by anyone who has
 the token.
 
+Reference SDK identifier limits:
+
+- `kid`: 1-128 characters matching `^[A-Za-z0-9._:/@-]+$`
+- `pur`: 1-128 characters matching `^[a-z0-9][a-z0-9._:-]{0,127}$`
+- `iss`: 1-256 characters matching `^[A-Za-z0-9._:/@-]+$`
+- `aud`: 1-256 characters matching `^[A-Za-z0-9._:/@-]+$`
+
+Other implementations SHOULD enforce equivalent length and character limits.
+
 ## Body
 
 The body is encrypted JSON.
@@ -151,6 +160,17 @@ String keys are 32-byte base64url values without padding.
 
 The reference SDK also accepts raw `Uint8Array` keys and Web Crypto `CryptoKey`
 objects. Protocol implementations only need the raw 32-byte AES-GCM key.
+
+Reference SDK `CryptoKey` inputs must be secret AES-GCM keys. A key used for
+sealing must allow `encrypt`; a key used for unsealing must allow `decrypt`.
+
+## Token Size
+
+The reference SDK rejects tokens larger than `16 * 1024` bytes by default before
+parsing or decrypting. Applications may configure a smaller sealer-level or
+policy-level limit for sensitive flows.
+
+Policy-level limits MUST NOT exceed the sealer-level limit.
 
 ## Sealing Procedure
 
@@ -230,6 +250,11 @@ Implementations SHOULD distinguish developer-facing rejection reasons, but
 applications SHOULD NOT expose detailed token rejection codes to untrusted
 clients.
 
+The reference SDK includes rejection codes for malformed tokens, unsupported
+algorithms, unknown key ids, invalid keys, failed decryption, expired tokens,
+not-yet-valid tokens, token size limits, schema validation failures, and binding
+mismatches.
+
 Recommended public response:
 
 ```txt
@@ -251,6 +276,7 @@ Recommended internal log fields:
 - A valid token can be replayed until it expires unless replay protection is
   added by the application or a future SDK extension.
 - Token size should be bounded by applications to limit resource abuse.
+- The reference SDK applies a default 16 KiB token size limit.
 - Keys must be generated with sufficient entropy and rotated carefully.
 - Do not reuse a key for unrelated protocols.
 
@@ -264,4 +290,3 @@ The v1 protocol is designed for Web Crypto compatible runtimes, including:
 - Bun
 - Node.js 18+
 - modern browsers with Web Crypto
-

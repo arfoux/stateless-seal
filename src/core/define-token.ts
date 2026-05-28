@@ -18,14 +18,21 @@ import { parseTtl } from "../policy/ttl";
 import { inspectToken } from "../token/inspect";
 import { fail, SealError } from "./errors";
 import { validatePayload } from "./schema";
+import {
+  isValidAudience,
+  isValidMaxTokenSize,
+  isValidPurpose
+} from "./validation";
 
 export function defineToken<TPayload>(
-  config: Required<Pick<SealerConfig, "issuer" | "keys" | "currentKeyId">> & {
+  config: Required<
+    Pick<SealerConfig, "issuer" | "keys" | "currentKeyId" | "maxTokenSize">
+  > & {
     clock: () => number;
   },
   policy: TokenPolicy<TPayload>
 ): TokenDefinition<TPayload> {
-  const parsedPolicy = validatePolicy(policy);
+  const parsedPolicy = validatePolicy(policy, config.maxTokenSize);
 
   return {
     async seal(payload: TPayload, options: SealOptions = {}): Promise<string> {
@@ -45,7 +52,7 @@ export function defineToken<TPayload>(
         throw new SealError("unknown_kid", "Current key id does not exist.");
       }
 
-      const key = await importAesGcmKey(keyInput);
+      const key = await importAesGcmKey(keyInput, "seal");
 
       const header: TokenHeader = {
         alg: "A256GCM",
@@ -81,10 +88,7 @@ export function defineToken<TPayload>(
         ciphertext
       });
 
-      if (
-        policy.maxTokenSize !== undefined &&
-        token.length > policy.maxTokenSize
-      ) {
+      if (token.length > parsedPolicy.maxTokenSize) {
         throw new SealError("token_too_large", "Token exceeds maxTokenSize.");
       }
 
@@ -92,10 +96,7 @@ export function defineToken<TPayload>(
     },
 
     async unseal(token: string): Promise<UnsealResult<TPayload>> {
-      if (
-        policy.maxTokenSize !== undefined &&
-        token.length > policy.maxTokenSize
-      ) {
+      if (token.length > parsedPolicy.maxTokenSize) {
         return fail("token_too_large");
       }
 
@@ -127,7 +128,14 @@ export function defineToken<TPayload>(
         return fail("unknown_kid");
       }
 
-      const key = await importAesGcmKey(keyInput);
+      let key: CryptoKey;
+
+      try {
+        key = await importAesGcmKey(keyInput, "unseal");
+      } catch {
+        return fail("invalid_key");
+      }
+
       const aad = createAad(parsed.headerB64);
 
       let body: EncryptedTokenBody<TPayload>;
@@ -215,9 +223,19 @@ export function defineToken<TPayload>(
   };
 }
 
-function validatePolicy(policy: TokenPolicy<unknown>) {
-  if (!policy.purpose || typeof policy.purpose !== "string") {
-    throw new SealError("invalid_policy", "Token purpose is required.");
+function validatePolicy(policy: TokenPolicy<unknown>, maxTokenSize: number) {
+  if (!isValidPurpose(policy.purpose)) {
+    throw new SealError(
+      "invalid_policy",
+      "Token purpose must be 1-128 lowercase safe identifier characters."
+    );
+  }
+
+  if (policy.audience !== undefined && !isValidAudience(policy.audience)) {
+    throw new SealError(
+      "invalid_policy",
+      "Token audience must be 1-256 safe identifier characters."
+    );
   }
 
   if (!policy.ttl) {
@@ -234,7 +252,7 @@ function validatePolicy(policy: TokenPolicy<unknown>) {
 
   if (
     policy.maxTokenSize !== undefined &&
-    (!Number.isInteger(policy.maxTokenSize) || policy.maxTokenSize <= 0)
+    !isValidMaxTokenSize(policy.maxTokenSize)
   ) {
     throw new SealError(
       "invalid_policy",
@@ -242,16 +260,27 @@ function validatePolicy(policy: TokenPolicy<unknown>) {
     );
   }
 
+  if (policy.maxTokenSize !== undefined && policy.maxTokenSize > maxTokenSize) {
+    throw new SealError(
+      "invalid_policy",
+      "Policy maxTokenSize cannot exceed sealer maxTokenSize."
+    );
+  }
+
+  const effectiveMaxTokenSize = policy.maxTokenSize ?? maxTokenSize;
+
   if (policy.notBefore === undefined) {
     return {
       ttlMs,
-      clockToleranceMs
+      clockToleranceMs,
+      maxTokenSize: effectiveMaxTokenSize
     };
   }
 
   return {
     ttlMs,
     clockToleranceMs,
+    maxTokenSize: effectiveMaxTokenSize,
     notBeforeMs: parsePolicyDuration(policy.notBefore, "notBefore", {
       allowZero: true
     })
