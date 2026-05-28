@@ -81,6 +81,7 @@ The current v1 vectors use:
 - issued at: `1779340000000`
 - expires at: `1779340900000`
 - not before: `1779340030000` where applicable
+- token id: `test-jti-0001` where applicable
 - payload: `{ "userId": "user_123" }`
 
 ## Compatibility Rules
@@ -93,4 +94,3 @@ An implementation passes the v1 vector set when it:
 - reports an equivalent rejection reason for invalid vectors
 - computes AAD from the exact encoded header segment
 - does not require canonical JSON during verification
-

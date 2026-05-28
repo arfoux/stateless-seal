@@ -1,0 +1,43 @@
+{
+  "name": "valid token with jti",
+  "version": "v1",
+  "description": "A valid magic link token with an encrypted token id for replay protection.",
+  "keyId": "2026-05",
+  "key": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "iv": "ICEiIyQlJicoKSor",
+  "issuer": "example-app",
+  "purpose": "magic-link",
+  "audience": "web",
+  "now": 1779340000000,
+  "payload": {
+    "userId": "user_123"
+  },
+  "token": "stseal.v1.eyJhbGciOiJBMjU2R0NNIiwia2lkIjoiMjAyNi0wNSIsInB1ciI6Im1hZ2ljLWxpbmsiLCJpc3MiOiJleGFtcGxlLWFwcCIsImF1ZCI6IndlYiJ9.ICEiIyQlJicoKSor.qRjPERi6ID8tS3v99SjEyeB53KyrogaWHNRWI369ZzpBvtM0vhUF6jjfBOYxKyXqlk-f-rdWWQjjUk8tfZAm_7xHuWq0rZ60_hmMVfI5G1v34kBhxaS3LPxtv1dl_l2s-oSSOAPLrZtXZVe_",
+  "verify": {
+    "issuer": "example-app",
+    "purpose": "magic-link",
+    "audience": "web",
+    "now": 1779340000000,
+    "keys": {
+      "2026-05": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8"
+    },
+    "currentKeyId": "2026-05"
+  },
+  "expected": {
+    "ok": true,
+    "payload": {
+      "userId": "user_123"
+    },
+    "meta": {
+      "version": "v1",
+      "algorithm": "A256GCM",
+      "keyId": "2026-05",
+      "purpose": "magic-link",
+      "issuer": "example-app",
+      "audience": "web",
+      "issuedAt": 1779340000000,
+      "expiresAt": 1779340600000,
+      "tokenId": "test-jti-0001"
+    }
+  }
+}

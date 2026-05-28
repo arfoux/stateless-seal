@@ -10,10 +10,11 @@ import type {
   TokenDefinition,
   TokenMeta,
   TokenPolicy,
+  UnsealOnceOptions,
   UnsealResult
 } from "./types";
 import { encodeToken, createAad, parseToken } from "../token/format";
-import { base64urlEncodeJson } from "../token/base64url";
+import { base64urlEncode, base64urlEncodeJson } from "../token/base64url";
 import { parseTtl } from "../policy/ttl";
 import { inspectToken } from "../token/inspect";
 import { fail, SealError } from "./errors";
@@ -33,6 +34,120 @@ export function defineToken<TPayload>(
   policy: TokenPolicy<TPayload>
 ): TokenDefinition<TPayload> {
   const parsedPolicy = validatePolicy(policy, config.maxTokenSize);
+
+  async function unsealInternal(
+    token: string,
+    options: { allowOneTime?: boolean } = {}
+  ): Promise<UnsealResult<TPayload>> {
+    if (token.length > parsedPolicy.maxTokenSize) {
+      return fail("token_too_large");
+    }
+
+    const parsed = parseToken(token);
+
+    if (!parsed) {
+      return fail("malformed_token");
+    }
+
+    if (parsed.header.alg !== "A256GCM") {
+      return fail("unsupported_algorithm");
+    }
+
+    if (parsed.header.pur !== policy.purpose) {
+      return fail("purpose_mismatch");
+    }
+
+    if (parsed.header.iss !== config.issuer) {
+      return fail("issuer_mismatch");
+    }
+
+    if (policy.audience && parsed.header.aud !== policy.audience) {
+      return fail("audience_mismatch");
+    }
+
+    const keyInput = config.keys[parsed.header.kid];
+
+    if (!keyInput) {
+      return fail("unknown_kid");
+    }
+
+    let key: CryptoKey;
+
+    try {
+      key = await importAesGcmKey(keyInput, "unseal");
+    } catch {
+      return fail("invalid_key");
+    }
+
+    const aad = createAad(parsed.headerB64);
+
+    let body: EncryptedTokenBody<TPayload>;
+
+    try {
+      const plaintext = await aesGcmDecrypt({
+        key,
+        iv: parsed.iv,
+        ciphertext: parsed.ciphertext,
+        aad
+      });
+
+      body = JSON.parse(
+        new TextDecoder().decode(plaintext)
+      ) as EncryptedTokenBody<TPayload>;
+    } catch {
+      return fail("decrypt_failed");
+    }
+
+    const now = config.clock();
+
+    if (
+      typeof body.exp !== "number" ||
+      now - parsedPolicy.clockToleranceMs > body.exp
+    ) {
+      return fail("expired");
+    }
+
+    if (
+      body.nbf !== undefined &&
+      (typeof body.nbf !== "number" ||
+        now + parsedPolicy.clockToleranceMs < body.nbf)
+    ) {
+      return fail("not_yet_valid");
+    }
+
+    if (body.jti !== undefined && typeof body.jti !== "string") {
+      return fail("missing_jti");
+    }
+
+    const payload = validatePayload(policy.schema, body.data);
+
+    if (!payload.ok) {
+      return fail("schema_validation_failed");
+    }
+
+    const meta: TokenMeta = {
+      version: "v1",
+      algorithm: parsed.header.alg,
+      keyId: parsed.header.kid,
+      purpose: parsed.header.pur,
+      issuer: parsed.header.iss,
+      issuedAt: body.iat,
+      expiresAt: body.exp,
+      ...(body.nbf !== undefined ? { notBefore: body.nbf } : {}),
+      ...(typeof body.jti === "string" ? { tokenId: body.jti } : {}),
+      ...(parsed.header.aud ? { audience: parsed.header.aud } : {})
+    };
+
+    if (parsedPolicy.oneTime && !options.allowOneTime) {
+      return fail("replay_required");
+    }
+
+    return {
+      ok: true,
+      payload: payload.payload,
+      meta
+    };
+  }
 
   return {
     async seal(payload: TPayload, options: SealOptions = {}): Promise<string> {
@@ -66,6 +181,7 @@ export function defineToken<TPayload>(
         iat: now,
         exp: now + parsedPolicy.ttlMs,
         ...resolveNotBefore(now, parsedPolicy.notBeforeMs, options),
+        ...(parsedPolicy.oneTime ? { jti: generateTokenId() } : {}),
         data: validatedPayload.payload
       };
 
@@ -96,105 +212,51 @@ export function defineToken<TPayload>(
     },
 
     async unseal(token: string): Promise<UnsealResult<TPayload>> {
-      if (token.length > parsedPolicy.maxTokenSize) {
-        return fail("token_too_large");
+      return unsealInternal(token);
+    },
+
+    async unsealOnce(
+      token: string,
+      options: UnsealOnceOptions
+    ): Promise<UnsealResult<TPayload>> {
+      if (
+        !options ||
+        !options.store ||
+        typeof options.store.consume !== "function"
+      ) {
+        return fail("replay_store_failed");
       }
 
-      const parsed = parseToken(token);
+      const result = await unsealInternal(token, {
+        allowOneTime: true
+      });
 
-      if (!parsed) {
-        return fail("malformed_token");
+      if (!result.ok) {
+        return result;
       }
 
-      if (parsed.header.alg !== "A256GCM") {
-        return fail("unsupported_algorithm");
+      if (!result.meta.tokenId) {
+        return fail("missing_jti");
       }
-
-      if (parsed.header.pur !== policy.purpose) {
-        return fail("purpose_mismatch");
-      }
-
-      if (parsed.header.iss !== config.issuer) {
-        return fail("issuer_mismatch");
-      }
-
-      if (policy.audience && parsed.header.aud !== policy.audience) {
-        return fail("audience_mismatch");
-      }
-
-      const keyInput = config.keys[parsed.header.kid];
-
-      if (!keyInput) {
-        return fail("unknown_kid");
-      }
-
-      let key: CryptoKey;
 
       try {
-        key = await importAesGcmKey(keyInput, "unseal");
+        const consumeResult = await options.store.consume(
+          result.meta.tokenId,
+          result.meta.expiresAt ?? 0
+        );
+
+        if (consumeResult === "replayed") {
+          return fail("replayed");
+        }
+
+        if (consumeResult !== "ok") {
+          return fail("replay_store_failed");
+        }
       } catch {
-        return fail("invalid_key");
+        return fail("replay_store_failed");
       }
 
-      const aad = createAad(parsed.headerB64);
-
-      let body: EncryptedTokenBody<TPayload>;
-
-      try {
-        const plaintext = await aesGcmDecrypt({
-          key,
-          iv: parsed.iv,
-          ciphertext: parsed.ciphertext,
-          aad
-        });
-
-        body = JSON.parse(
-          new TextDecoder().decode(plaintext)
-        ) as EncryptedTokenBody<TPayload>;
-      } catch {
-        return fail("decrypt_failed");
-      }
-
-      const now = config.clock();
-
-      if (
-        typeof body.exp !== "number" ||
-        now - parsedPolicy.clockToleranceMs > body.exp
-      ) {
-        return fail("expired");
-      }
-
-      if (
-        body.nbf !== undefined &&
-        (typeof body.nbf !== "number" ||
-          now + parsedPolicy.clockToleranceMs < body.nbf)
-      ) {
-        return fail("not_yet_valid");
-      }
-
-      const payload = validatePayload(policy.schema, body.data);
-
-      if (!payload.ok) {
-        return fail("schema_validation_failed");
-      }
-
-      const meta: TokenMeta = {
-        version: "v1",
-        algorithm: parsed.header.alg,
-        keyId: parsed.header.kid,
-        purpose: parsed.header.pur,
-        issuer: parsed.header.iss,
-        issuedAt: body.iat,
-        expiresAt: body.exp,
-        ...(body.nbf !== undefined ? { notBefore: body.nbf } : {}),
-        ...(parsed.header.aud ? { audience: parsed.header.aud } : {})
-      };
-
-      return {
-        ok: true,
-        payload: payload.payload,
-        meta
-      };
+      return result;
     },
 
     async unsealOrThrow(token: string): Promise<TPayload> {
@@ -238,6 +300,10 @@ function validatePolicy(policy: TokenPolicy<unknown>, maxTokenSize: number) {
     );
   }
 
+  if (policy.oneTime !== undefined && typeof policy.oneTime !== "boolean") {
+    throw new SealError("invalid_policy", "oneTime must be a boolean.");
+  }
+
   if (!policy.ttl) {
     throw new SealError("invalid_policy", "Token ttl is required.");
   }
@@ -273,7 +339,8 @@ function validatePolicy(policy: TokenPolicy<unknown>, maxTokenSize: number) {
     return {
       ttlMs,
       clockToleranceMs,
-      maxTokenSize: effectiveMaxTokenSize
+      maxTokenSize: effectiveMaxTokenSize,
+      oneTime: policy.oneTime === true
     };
   }
 
@@ -281,6 +348,7 @@ function validatePolicy(policy: TokenPolicy<unknown>, maxTokenSize: number) {
     ttlMs,
     clockToleranceMs,
     maxTokenSize: effectiveMaxTokenSize,
+    oneTime: policy.oneTime === true,
     notBeforeMs: parsePolicyDuration(policy.notBefore, "notBefore", {
       allowZero: true
     })
@@ -344,4 +412,8 @@ function parseDuration(
   }
 
   return parseTtl(value);
+}
+
+function generateTokenId(): string {
+  return base64urlEncode(randomBytes(16));
 }

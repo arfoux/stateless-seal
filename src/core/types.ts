@@ -38,10 +38,21 @@ export type TokenPolicy<TPayload = unknown> = {
   maxTokenSize?: number;
   clockTolerance?: DurationInput;
   notBefore?: DurationInput;
+  oneTime?: boolean;
 };
 
 export type SealOptions = {
   notBefore?: DurationInput;
+};
+
+export type ReplayStoreConsumeResult = "ok" | "replayed";
+
+export type ReplayStore = {
+  consume(id: string, expiresAt: number): Promise<ReplayStoreConsumeResult>;
+};
+
+export type UnsealOnceOptions = {
+  store: ReplayStore;
 };
 
 export type TokenHeader = {
@@ -56,6 +67,7 @@ export type EncryptedTokenBody<TPayload> = {
   iat: number;
   exp: number;
   nbf?: number;
+  jti?: string;
   data: TPayload;
 };
 
@@ -69,6 +81,7 @@ export type TokenMeta = {
   issuedAt?: number;
   expiresAt?: number;
   notBefore?: number;
+  tokenId?: string;
 };
 
 export type SealErrorCode =
@@ -85,6 +98,10 @@ export type SealErrorCode =
   | "not_yet_valid"
   | "token_too_large"
   | "schema_validation_failed"
+  | "replay_required"
+  | "missing_jti"
+  | "replayed"
+  | "replay_store_failed"
   | "purpose_mismatch"
   | "issuer_mismatch"
   | "audience_mismatch";
@@ -112,6 +129,10 @@ export type ParsedToken = {
 export type TokenDefinition<TPayload> = {
   seal(payload: TPayload, options?: SealOptions): Promise<string>;
   unseal(token: string): Promise<UnsealResult<TPayload>>;
+  unsealOnce(
+    token: string,
+    options: UnsealOnceOptions
+  ): Promise<UnsealResult<TPayload>>;
   unsealOrThrow(token: string): Promise<TPayload>;
   unsealOrNull(token: string): Promise<TPayload | null>;
   inspect(token: string): TokenMeta | null;

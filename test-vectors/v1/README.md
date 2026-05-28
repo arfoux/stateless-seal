@@ -10,6 +10,7 @@ Valid vectors:
 
 - `valid-basic.json`
 - `valid-with-audience.json`
+- `valid-with-jti.json`
 - `valid-with-nbf.json`
 
 Invalid vectors:
@@ -21,4 +22,3 @@ Invalid vectors:
 - `invalid-tampered-header.json`
 - `invalid-tampered-ciphertext.json`
 - `invalid-unknown-kid.json`
-

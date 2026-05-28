@@ -107,6 +107,7 @@ Body fields:
   "iat": 1779340000000,
   "exp": 1779340900000,
   "nbf": 1779340030000,
+  "jti": "random-token-id",
   "data": {}
 }
 ```
@@ -116,6 +117,7 @@ Fields:
 - `iat`: required. Issued-at timestamp in milliseconds since Unix epoch.
 - `exp`: required. Expiration timestamp in milliseconds since Unix epoch.
 - `nbf`: optional. Not-before timestamp in milliseconds since Unix epoch.
+- `jti`: optional. Token id used by replay protection stores.
 - `data`: required. Application payload.
 
 Future protocol extensions may add additional encrypted body fields.
@@ -184,13 +186,15 @@ Given:
 - current time `now`
 - ttl in milliseconds
 - optional not-before delay
+- optional one-time token id
 - application payload `data`
 
 Producer steps:
 
 1. Construct the header JSON with `alg`, `kid`, `pur`, `iss`, and optional `aud`.
 2. Base64url encode the UTF-8 header JSON as `headerB64`.
-3. Construct the encrypted body with `iat`, `exp`, optional `nbf`, and `data`.
+3. Construct the encrypted body with `iat`, `exp`, optional `nbf`, optional
+   `jti`, and `data`.
 4. Encode the body JSON as UTF-8.
 5. Generate a fresh 12-byte random IV.
 6. Compute AAD as `UTF8("stseal.v1." + headerB64)`.
@@ -235,6 +239,36 @@ Clock tolerance applies to both `exp` and `nbf`:
 - Expiration check: `now - clockTolerance <= exp`
 - Not-before check: `now + clockTolerance >= nbf`
 
+## Replay Protection
+
+Stateless Seal v1 supports optional replay protection through an encrypted
+`jti` body field and an external replay store.
+
+The reference SDK adds `jti` automatically when a token policy uses
+`oneTime: true`. The token id is generated as 128 bits of random data encoded as
+base64url without padding.
+
+Replay store interface:
+
+```ts
+type ReplayStore = {
+  consume(id: string, expiresAt: number): Promise<"ok" | "replayed">;
+};
+```
+
+Verifier behavior for one-time flows:
+
+1. Verify and decrypt the token normally.
+2. Reject expired or not-yet-valid tokens before touching the replay store.
+3. Require a decrypted `jti`.
+4. Call `store.consume(jti, exp)`.
+5. Return the payload only if the store returns `"ok"`.
+6. Reject with a replay error if the store returns `"replayed"`.
+
+For token policies configured with `oneTime: true`, the reference SDK rejects
+plain `unseal()` with `replay_required`. Applications must use `unsealOnce()`
+with a replay store for those policies.
+
 ## Audience Semantics
 
 Audience is optional. If a verifier configures an expected audience, the token
@@ -253,7 +287,8 @@ clients.
 The reference SDK includes rejection codes for malformed tokens, unsupported
 algorithms, unknown key ids, invalid keys, failed decryption, expired tokens,
 not-yet-valid tokens, token size limits, schema validation failures, and binding
-mismatches.
+mismatches. It also includes replay-specific codes for required replay checks,
+missing token ids, replayed tokens, and replay store failures.
 
 Recommended public response:
 

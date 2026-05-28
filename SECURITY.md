@@ -34,7 +34,7 @@ Reports are in scope when they affect:
 - purpose, issuer, or audience bypass
 - expiry or not-before enforcement
 - key handling
-- replay protection once replay APIs exist
+- replay protection bugs when `unsealOnce()` and a replay store are used
 - denial-of-service behavior caused by malformed tokens
 
 Reports are usually out of scope when they are only about:
@@ -72,4 +72,3 @@ if (!result.ok) {
 ```
 
 Log detailed rejection codes internally instead.
-

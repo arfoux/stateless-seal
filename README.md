@@ -158,6 +158,8 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [TEST-VECTORS.md](./TEST-VECTORS.md) - official compatibility vectors
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
+- [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
+- [CHANGELOG.md](./CHANGELOG.md) - release history
 
 ---
 
@@ -296,6 +298,7 @@ type TokenPolicy = {
   maxTokenSize?: number;
   clockTolerance?: string | number;
   notBefore?: string | number;
+  oneTime?: boolean;
 };
 ```
 
@@ -326,6 +329,7 @@ Additional policy options:
   be less than or equal to the sealer limit
 - `clockTolerance` allows small clock skew for `exp` and `nbf`
 - `notBefore` sets a default relative activation delay for newly sealed tokens
+- `oneTime` adds an encrypted `jti` and requires `unsealOnce()` with a replay store
 
 `schema` is structural. Zod-style schemas work without making Zod a required dependency:
 
@@ -412,6 +416,10 @@ expired
 not_yet_valid
 token_too_large
 schema_validation_failed
+replay_required
+missing_jti
+replayed
+replay_store_failed
 purpose_mismatch
 issuer_mismatch
 audience_mismatch
@@ -440,6 +448,37 @@ if (!payload) {
   // reject request
 }
 ```
+
+---
+
+### `Token.unsealOnce(token, { store })`
+
+Verifies, decrypts, and consumes a one-time token through a replay store.
+
+```ts
+import { memoryReplayStore } from "stateless-seal";
+
+const MagicLinkToken = sealer.defineToken<{ userId: string }>({
+  purpose: "magic-link",
+  ttl: "10m",
+  audience: "web",
+  oneTime: true
+});
+
+const store = memoryReplayStore();
+const result = await MagicLinkToken.unsealOnce(token, { store });
+
+if (!result.ok) {
+  console.log(result.code);
+}
+```
+
+For policies with `oneTime: true`, plain `unseal()` returns
+`replay_required`. Use `unsealOnce()` so the token id is consumed before the
+payload is accepted.
+
+`memoryReplayStore()` is intended for tests, local development, and
+single-process demos. Production multi-instance apps should use a shared store.
 
 ---
 
@@ -693,6 +732,7 @@ const sealer = createSealer({
 - audience binding
 - key rotation support
 - expiration checking
+- optional one-time replay protection with a replay store
 
 It uses:
 
@@ -716,14 +756,16 @@ Use short TTLs.
 
 ---
 
-### Replay is possible within the token lifetime
+### One-time tokens need a replay store
 
 AES-GCM prevents tampering.  
-It does not prevent a valid token from being reused.
+It does not prevent a valid bearer token from being reused by itself.
 
-For password reset links, magic links, or one-time flows, use short TTLs.
+For password reset links, magic links, or one-time flows, use `oneTime: true`,
+short TTLs, and `unsealOnce()` with a replay store.
 
-Built-in replay protection is planned for a future version.
+If the replay store is unavailable, reject the token. Accepting tokens while the
+store is down silently disables one-time guarantees.
 
 ---
 
@@ -846,11 +888,17 @@ Use `stateless-seal` for password reset tokens, invite links, email verification
 ## Example: password reset
 
 ```ts
+import { memoryReplayStore } from "stateless-seal";
+
 const PasswordResetToken = sealer.defineToken<{ userId: string }>({
   purpose: "password-reset",
   ttl: "15m",
-  audience: "web"
+  audience: "web",
+  oneTime: true
 });
+
+// Replace with a shared production replay store in multi-instance apps.
+const replayStore = memoryReplayStore();
 
 export async function createPasswordResetLink(userId: string) {
   const token = await PasswordResetToken.seal({ userId });
@@ -859,7 +907,9 @@ export async function createPasswordResetLink(userId: string) {
 }
 
 export async function verifyPasswordResetToken(token: string) {
-  const result = await PasswordResetToken.unseal(token);
+  const result = await PasswordResetToken.unsealOnce(token, {
+    store: replayStore
+  });
 
   if (!result.ok) {
     return null;
@@ -1009,7 +1059,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.2.1.
+This is v0.3.0.
 
 Included:
 
@@ -1017,6 +1067,7 @@ Included:
 - `defineToken()`
 - `Token.seal()`
 - `Token.unseal()`
+- `Token.unsealOnce()`
 - `Token.unsealOrThrow()`
 - `Token.unsealOrNull()`
 - `Token.inspect()`
@@ -1028,6 +1079,9 @@ Included:
 - explicit `invalid_key` handling
 - `clockTolerance`
 - `notBefore` / encrypted `nbf`
+- `oneTime` / encrypted `jti`
+- `ReplayStore`
+- `memoryReplayStore()`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1041,8 +1095,8 @@ Included:
 
 Not included yet:
 
-- replay protection
 - Redis/Upstash replay store
+- Cloudflare KV replay store
 - refresh token flow
 - CLI
 
@@ -1072,13 +1126,22 @@ Developer experience.
 - `notBefore` / `nbf`
 - stricter token size controls
 
+### v0.3
+
+One-time token flows.
+
+- encrypted `jti`
+- `oneTime` token policy
+- `ReplayStore` interface
+- `Token.unsealOnce()`
+- `memoryReplayStore()`
+
 ### v1.0
 
 Stable production API.
 
-- replay protection interface
-- one-time token support
 - Redis/Upstash adapter
+- Cloudflare KV adapter
 - complete threat model
 - stable token format guarantee
 - production checklist

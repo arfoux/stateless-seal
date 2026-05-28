@@ -55,6 +55,7 @@ provides:
 - optional audience binding
 - expiration enforcement
 - optional not-before enforcement
+- optional one-time replay protection when a replay store is used
 - key rotation support through `kid`
 
 ## Non-Guarantees
@@ -75,14 +76,18 @@ provides:
 ## Replay Risk
 
 Stateless tokens are bearer tokens. Anyone who obtains a valid token can replay
-it until the token expires.
+it until the token expires unless the token is verified through a replay store.
 
 For sensitive one-time flows such as password reset, magic links, or email
-verification, applications should use short TTLs. A future replay protection
-layer should add `jti` plus a replay store so tokens can be consumed once.
+verification, applications should use `oneTime: true`, short TTLs, and
+`unsealOnce()` with a replay store.
 
-Until then, treat `stateless-seal` as a short-lived sealed token primitive, not
-as a complete one-time token system.
+The built-in memory replay store is for tests, local development, and
+single-process demos. Multi-instance production systems need a shared replay
+store such as Cloudflare KV, Redis, or another atomic store.
+
+Replay store failure should be treated as token rejection. Accepting tokens when
+the replay store is unavailable can silently disable one-time guarantees.
 
 ## Header Visibility
 
@@ -155,7 +160,6 @@ return Response.json({ error: result.code }, { status: 401 });
 
 Future versions should extend this document for:
 
-- replay store failure modes
 - one-time token semantics
 - Redis and Cloudflare KV consistency behavior
 - context binding

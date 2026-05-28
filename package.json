@@ -1,6 +1,6 @@
 {
   "name": "stateless-seal",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Purpose-bound sealed tokens for JavaScript.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -19,6 +19,8 @@
     "SECURITY.md",
     "THREAT-MODEL.md",
     "TEST-VECTORS.md",
+    "CHANGELOG.md",
+    "docs",
     "test-vectors",
     "README.md",
     "LICENSE"
