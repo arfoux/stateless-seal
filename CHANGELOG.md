@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+
+- Add key management guidance.
+- Add production error handling guidance.
+- Add production deployment checklist.
+- Document public vs server-side token rejection handling.
+- Document key rotation and emergency key removal guidance.
+
 ## 0.7.0
 
 - Add `stateless-seal` CLI binary.

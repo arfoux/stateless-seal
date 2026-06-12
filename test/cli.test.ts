@@ -6,6 +6,9 @@ import { logTestStep } from "./debug-log";
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = "bin/stateless-seal.mjs";
+const PACKAGE_VERSION = (
+  JSON.parse(readFileSync("package.json", "utf8")) as { version: string }
+).version;
 
 type Vector = {
   token: string;
@@ -102,6 +105,6 @@ describe("CLI", () => {
 
     logTestStep("cli.version", stdout);
 
-    expect(stdout.trim()).toBe("0.7.0");
+    expect(stdout.trim()).toBe(PACKAGE_VERSION);
   });
 });

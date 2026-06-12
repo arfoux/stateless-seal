@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "node:fs";
+
 const BASE64URL_ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const BASE64_ALPHABET =
@@ -136,12 +138,23 @@ Commands:
 }
 
 function printVersion() {
-  console.log("0.7.0");
+  console.log(readPackageVersion());
 }
 
 function fail(message) {
   console.error(message);
   process.exitCode = 1;
+}
+
+function readPackageVersion() {
+  const packageJsonUrl = new URL("../package.json", import.meta.url);
+  const packageJson = JSON.parse(readFileSync(packageJsonUrl, "utf8"));
+
+  if (typeof packageJson.version !== "string") {
+    throw new Error("Package version is unavailable.");
+  }
+
+  return packageJson.version;
 }
 
 async function getCrypto() {

@@ -161,6 +161,9 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/cli.md](./docs/cli.md) - keygen and unverified inspect CLI
+- [docs/key-management.md](./docs/key-management.md) - key generation, storage, and rotation
+- [docs/error-handling.md](./docs/error-handling.md) - safe public and server-side errors
+- [docs/production-checklist.md](./docs/production-checklist.md) - production deployment checklist
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
 - [docs/cookie-session.md](./docs/cookie-session.md) - framework-agnostic cookie sessions
@@ -1157,7 +1160,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.7.0.
+This is v0.8.0.
 
 Included:
 
@@ -1185,6 +1188,9 @@ Included:
 - `createTestSealer()`
 - `createCookieSession()`
 - official recipes
+- key management guidance
+- production checklist
+- error handling guidance
 - CLI `keygen`
 - CLI `inspect`
 - edge-safe cookie helpers
@@ -1203,7 +1209,7 @@ Not included yet:
 - Redis/Upstash replay store
 - strongly consistent Cloudflare Durable Object replay store
 - refresh token flow
-- CLI
+- CLI `seal` / `unseal` commands
 
 ---
 
@@ -1276,15 +1282,22 @@ CLI basics.
 - `stateless-seal keygen`
 - `stateless-seal inspect`
 
+### v0.8
+
+Production readiness docs.
+
+- key management guide
+- error handling guide
+- production checklist
+
 ### v1.0
 
 Stable production API.
 
 - Redis/Upstash adapter
-- Cloudflare KV adapter
-- complete threat model
+- strongly consistent Cloudflare Durable Object replay store
 - stable token format guarantee
-- production checklist
+- production API freeze
 
 ---
 
