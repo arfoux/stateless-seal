@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 describe("key rotation", () => {
   it("can unseal old token with old key still in keyring", async () => {
@@ -40,6 +41,12 @@ describe("key rotation", () => {
     });
 
     const result = await NewToken.unseal(oldToken);
+
+    logTestStep("key-rotation.old-key-still-valid", {
+      token: summarizeToken(oldToken),
+      availableKeyIds: ["2026-05", "2026-04"],
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(true);
 
@@ -84,6 +91,12 @@ describe("key rotation", () => {
     });
 
     const result = await NewToken.unseal(oldToken);
+
+    logTestStep("key-rotation.old-key-removed", {
+      token: summarizeToken(oldToken),
+      availableKeyIds: ["2026-05"],
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(false);
 

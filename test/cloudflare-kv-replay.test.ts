@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
 import { cloudflareKVReplayStore } from "../src/cloudflare";
 import type { CloudflareKVNamespace } from "../src/cloudflare";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 class FakeKVNamespace implements CloudflareKVNamespace {
   readonly values = new Map<string, string>();
@@ -43,6 +44,10 @@ describe("cloudflareKVReplayStore", () => {
     await expect(store.consume("jti_123", 11_000)).resolves.toBe("ok");
     await expect(store.consume("jti_123", 11_000)).resolves.toBe("replayed");
 
+    logTestStep("cloudflare-kv.consume-once", {
+      puts: namespace.puts
+    });
+
     expect(namespace.puts).toEqual([
       {
         key: "test:jti_123",
@@ -61,6 +66,10 @@ describe("cloudflareKVReplayStore", () => {
 
     await expect(store.consume("jti_123", 121_000)).resolves.toBe("ok");
 
+    logTestStep("cloudflare-kv.expiry-ttl", {
+      puts: namespace.puts
+    });
+
     expect(namespace.puts[0]?.expirationTtl).toBe(120);
   });
 
@@ -72,6 +81,10 @@ describe("cloudflareKVReplayStore", () => {
     });
 
     await expect(store.consume("jti_123", 2_000)).resolves.toBe("ok");
+
+    logTestStep("cloudflare-kv.minimum-ttl-floor", {
+      puts: namespace.puts
+    });
 
     expect(namespace.puts[0]?.expirationTtl).toBe(60);
   });
@@ -106,6 +119,12 @@ describe("cloudflareKVReplayStore", () => {
 
     const first = await MagicLinkToken.unsealOnce(token, { store });
 
+    logTestStep("cloudflare-kv.unseal-once.first", {
+      token: summarizeToken(token),
+      result: summarizeResult(first),
+      puts: namespace.puts
+    });
+
     expect(first.ok).toBe(true);
 
     if (first.ok) {
@@ -115,6 +134,11 @@ describe("cloudflareKVReplayStore", () => {
     now = 2000;
 
     const second = await MagicLinkToken.unsealOnce(token, { store });
+
+    logTestStep("cloudflare-kv.unseal-once.second", {
+      now,
+      result: summarizeResult(second)
+    });
 
     expect(second.ok).toBe(false);
 
@@ -153,6 +177,11 @@ describe("cloudflareKVReplayStore", () => {
     });
     const result = await Token.unsealOnce(token, {
       store: cloudflareKVReplayStore(namespace)
+    });
+
+    logTestStep("cloudflare-kv.failure", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
     });
 
     expect(result.ok).toBe(false);

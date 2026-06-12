@@ -4,6 +4,7 @@ import {
   base64urlEncode,
   base64urlEncodeJson
 } from "../src/token/base64url";
+import { logTestStep } from "./debug-log";
 
 describe("malformed tokens", () => {
   it("returns malformed_token for malformed inputs without throwing", async () => {
@@ -61,6 +62,7 @@ describe("malformed tokens", () => {
       `stseal.v1.${validHeader}.${validIv}.`,
       `stseal.v1.${validHeader}.${validIv}.abc*`
     ];
+    const codes = new Set<string>();
 
     for (const input of inputs) {
       const result = await Token.unseal(input);
@@ -68,8 +70,14 @@ describe("malformed tokens", () => {
       expect(result.ok, input).toBe(false);
 
       if (!result.ok) {
+        codes.add(result.code);
         expect(result.code, input).toBe("malformed_token");
       }
     }
+
+    logTestStep("malformed-token.inputs", {
+      checked: inputs.length,
+      observedCodes: [...codes]
+    });
   });
 });

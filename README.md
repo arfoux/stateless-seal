@@ -160,6 +160,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
+- [docs/testing.md](./docs/testing.md) - test clock and test sealer helpers
 - [CHANGELOG.md](./CHANGELOG.md) - release history
 
 ---
@@ -490,6 +491,41 @@ const result = await MagicLinkToken.unsealOnce(token, {
   store: cloudflareKVReplayStore(env.REPLAY_KV)
 });
 ```
+
+---
+
+## Testing helpers
+
+Testing helpers are available from the `stateless-seal/testing` subpath.
+
+```ts
+import { createTestSealer } from "stateless-seal/testing";
+
+const { sealer, clock } = createTestSealer({
+  issuer: "test-app",
+  now: 1000
+});
+
+const SessionToken = sealer.defineToken<{ userId: string }>({
+  purpose: "session",
+  ttl: "10s"
+});
+
+const token = await SessionToken.seal({
+  userId: "user_123"
+});
+
+await SessionToken.unseal(token);
+
+clock.advance("11s");
+
+const expired = await SessionToken.unseal(token);
+```
+
+Use these helpers for application tests and examples. Do not use the exported
+test key in production.
+
+See [docs/testing.md](./docs/testing.md).
 
 ---
 
@@ -1070,7 +1106,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.3.1.
+This is v0.4.0.
 
 Included:
 
@@ -1094,6 +1130,8 @@ Included:
 - `ReplayStore`
 - `memoryReplayStore()`
 - `cloudflareKVReplayStore()`
+- `createTestClock()`
+- `createTestSealer()`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1148,6 +1186,14 @@ One-time token flows.
 - `Token.unsealOnce()`
 - `memoryReplayStore()`
 - Cloudflare Workers KV replay store
+
+### v0.4
+
+Testing and application DX.
+
+- `stateless-seal/testing` subpath
+- `createTestClock()`
+- `createTestSealer()`
 
 ### v1.0
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { logTestStep } from "./debug-log";
 
 const FORBIDDEN_RUNTIME_PATTERNS = [
   /\bBuffer\b/,
@@ -36,6 +37,13 @@ function collectTsFiles(dir: string): string[] {
 describe("edge runtime compatibility", () => {
   it("does not use Node.js runtime APIs in src", () => {
     const files = collectTsFiles("src");
+
+    logTestStep("edge-compat.scan", {
+      files: files.length,
+      forbiddenPatterns: FORBIDDEN_RUNTIME_PATTERNS.map((pattern) =>
+        pattern.toString()
+      )
+    });
 
     for (const file of files) {
       const content = readFileSync(file, "utf8");

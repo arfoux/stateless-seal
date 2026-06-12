@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeToken } from "./debug-log";
 
 describe("inspect", () => {
   it("reads token metadata without unsealing payload", async () => {
@@ -21,6 +22,11 @@ describe("inspect", () => {
 
     const token = await Token.seal({ userId: "user_123" });
     const meta = Token.inspect(token);
+
+    logTestStep("inspect.metadata", {
+      token: summarizeToken(token),
+      meta
+    });
 
     expect(meta).toEqual({
       version: "v1",

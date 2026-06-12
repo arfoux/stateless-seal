@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 describe("seal and unseal", () => {
   it("seals and unseals a payload", async () => {
@@ -26,6 +27,11 @@ describe("seal and unseal", () => {
     expect(token.startsWith("stseal.v1.")).toBe(true);
 
     const result = await PasswordResetToken.unseal(token);
+
+    logTestStep("seal-unseal.roundtrip", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(true);
 
@@ -57,6 +63,12 @@ describe("seal and unseal", () => {
 
     const tokenA = await SessionToken.seal({ userId: "user_123" });
     const tokenB = await SessionToken.seal({ userId: "user_123" });
+
+    logTestStep("seal-unseal.random-iv", {
+      tokenA: summarizeToken(tokenA),
+      tokenB: summarizeToken(tokenB),
+      sameToken: tokenA === tokenB
+    });
 
     expect(tokenA).not.toBe(tokenB);
   });

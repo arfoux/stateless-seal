@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Add `stateless-seal/testing` subpath export.
+- Add `createTestClock()` for expiry, `nbf`, and replay tests.
+- Add `createTestSealer()` with stable test defaults.
+- Add testing helper docs and test coverage.
+- Add opt-in debug logs across the internal test suite.
+
 ## 0.3.1
 
 - Add `stateless-seal/cloudflare` subpath export.

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeToken } from "./debug-log";
 
 describe("unsealOrNull", () => {
   it("returns the payload for a valid token", async () => {
@@ -22,6 +23,11 @@ describe("unsealOrNull", () => {
     const token = await Token.seal({ userId: "user_123" });
     const payload = await Token.unsealOrNull(token);
 
+    logTestStep("unseal-or-null.valid", {
+      token: summarizeToken(token),
+      payload
+    });
+
     expect(payload).toEqual({ userId: "user_123" });
   });
 
@@ -42,6 +48,13 @@ describe("unsealOrNull", () => {
       audience: "web"
     });
 
-    await expect(Token.unsealOrNull("not-a-token")).resolves.toBeNull();
+    const payload = await Token.unsealOrNull("not-a-token");
+
+    logTestStep("unseal-or-null.invalid", {
+      input: "not-a-token",
+      payload
+    });
+
+    expect(payload).toBeNull();
   });
 });

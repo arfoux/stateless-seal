@@ -5,6 +5,7 @@ import {
   memoryReplayStore
 } from "../src";
 import type { ReplayStore } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 describe("replay protection", () => {
   it("consumes a one-time token once and rejects replay", async () => {
@@ -36,6 +37,11 @@ describe("replay protection", () => {
 
     const first = await MagicLinkToken.unsealOnce(token, { store });
 
+    logTestStep("replay.once.first", {
+      token: summarizeToken(token),
+      result: summarizeResult(first)
+    });
+
     expect(first.ok).toBe(true);
 
     if (first.ok) {
@@ -47,6 +53,11 @@ describe("replay protection", () => {
     now = 2000;
 
     const second = await MagicLinkToken.unsealOnce(token, { store });
+
+    logTestStep("replay.once.second", {
+      now,
+      result: summarizeResult(second)
+    });
 
     expect(second.ok).toBe(false);
 
@@ -77,6 +88,11 @@ describe("replay protection", () => {
     });
     const result = await MagicLinkToken.unseal(token);
 
+    logTestStep("replay.requires-unseal-once", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
+
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
@@ -105,6 +121,11 @@ describe("replay protection", () => {
     });
     const result = await SessionToken.unsealOnce(token, {
       store: memoryReplayStore()
+    });
+
+    logTestStep("replay.missing-jti", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
     });
 
     expect(result.ok).toBe(false);
@@ -149,6 +170,12 @@ describe("replay protection", () => {
 
     const result = await Token.unsealOnce(token, { store });
 
+    logTestStep("replay.expired-not-consumed", {
+      now,
+      consumeCalls,
+      result: summarizeResult(result)
+    });
+
     expect(result.ok).toBe(false);
     expect(consumeCalls).toBe(0);
 
@@ -184,6 +211,11 @@ describe("replay protection", () => {
       userId: "user_123"
     });
     const result = await Token.unsealOnce(token, { store });
+
+    logTestStep("replay.store-failed", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(false);
 

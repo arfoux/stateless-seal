@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 describe("expiry", () => {
   it("rejects expired tokens", async () => {
@@ -27,6 +28,12 @@ describe("expiry", () => {
     now = 3000;
 
     const result = await Token.unseal(token);
+
+    logTestStep("expiry.expired", {
+      token: summarizeToken(token),
+      now,
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(false);
 
@@ -60,6 +67,12 @@ describe("expiry", () => {
     now = 5000;
 
     const result = await Token.unseal(token);
+
+    logTestStep("expiry.before-expiry", {
+      token: summarizeToken(token),
+      now,
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(true);
   });

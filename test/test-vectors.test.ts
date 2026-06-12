@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createSealer } from "../src";
 import type { Keyring, SealErrorCode, TokenMeta } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 type Vector = {
   name: string;
@@ -58,6 +59,13 @@ describe("v1 test vectors", () => {
       });
 
       const result = await Token.unseal(vector.token);
+
+      logTestStep("test-vector.verify", {
+        name: vector.name,
+        token: summarizeToken(vector.token),
+        expected: vector.expected,
+        result: summarizeResult(result)
+      });
 
       expect(result.ok).toBe(vector.expected.ok);
 

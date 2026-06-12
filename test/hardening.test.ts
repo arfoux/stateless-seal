@@ -4,10 +4,16 @@ import {
   createSealer,
   generateSealKey
 } from "../src";
+import { logTestStep, summarizeResult } from "./debug-log";
 
 describe("hardening", () => {
   it("rejects invalid issuer and key identifiers", () => {
     const key = generateSealKey();
+
+    logTestStep("hardening.invalid-config-identifiers", {
+      invalidIssuer: "my app",
+      invalidKeyId: "bad key"
+    });
 
     expect(() =>
       createSealer({
@@ -39,6 +45,11 @@ describe("hardening", () => {
         "2026-05": key
       },
       currentKeyId: "2026-05"
+    });
+
+    logTestStep("hardening.invalid-policy-identifiers", {
+      invalidPurpose: "Password Reset",
+      invalidAudience: "web app"
     });
 
     expect(() =>
@@ -76,6 +87,12 @@ describe("hardening", () => {
     const token = `stseal.v1.${"a".repeat(DEFAULT_MAX_TOKEN_SIZE)}`;
     const result = await Token.unseal(token);
 
+    logTestStep("hardening.default-max-token-size", {
+      defaultMaxTokenSize: DEFAULT_MAX_TOKEN_SIZE,
+      attemptedLength: token.length,
+      result: summarizeResult(result)
+    });
+
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
@@ -103,6 +120,12 @@ describe("hardening", () => {
 
     const result = await Token.unseal(`stseal.v1.${"a".repeat(65)}`);
 
+    logTestStep("hardening.policy-max-token-size", {
+      sealerMaxTokenSize: 128,
+      policyMaxTokenSize: 64,
+      result: summarizeResult(result)
+    });
+
     expect(result.ok).toBe(false);
 
     if (!result.ok) {
@@ -120,6 +143,11 @@ describe("hardening", () => {
       },
       currentKeyId: "2026-05",
       maxTokenSize: 128
+    });
+
+    logTestStep("hardening.policy-limit-overflow", {
+      sealerMaxTokenSize: 128,
+      policyMaxTokenSize: 256
     });
 
     expect(() =>
@@ -143,6 +171,11 @@ describe("hardening", () => {
     const Token = sealer.defineToken<{ userId: string }>({
       purpose: "session",
       ttl: "1h"
+    });
+
+    logTestStep("hardening.invalid-current-key", {
+      keyId: "2026-05",
+      expectedCode: "invalid_key"
     });
 
     await expect(Token.seal({ userId: "user_123" })).rejects.toMatchObject({
@@ -180,6 +213,8 @@ describe("hardening", () => {
 
     const BadToken = badSealer.defineToken<{ userId: string }>(policy);
     const result = await BadToken.unseal(token);
+
+    logTestStep("hardening.invalid-unseal-key", summarizeResult(result));
 
     expect(result.ok).toBe(false);
 

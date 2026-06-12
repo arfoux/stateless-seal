@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { createSealer, generateSealKey } from "../src";
+import { logTestStep, summarizeResult, summarizeToken } from "./debug-log";
 
 type SessionPayload = {
   userId: string;
@@ -51,6 +52,11 @@ describe("schema validation", () => {
     });
 
     const result = await SessionToken.unseal(token);
+
+    logTestStep("schema.parse.roundtrip", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(true);
 
@@ -118,6 +124,11 @@ describe("schema validation", () => {
 
     const result = await SessionToken.unseal(token);
 
+    logTestStep("schema.safe-parse.roundtrip", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
+
     expect(result.ok).toBe(true);
 
     if (result.ok) {
@@ -164,6 +175,14 @@ describe("schema validation", () => {
           };
         }
       }
+    });
+
+    logTestStep("schema.reject-while-sealing", {
+      payload: {
+        userId: "user_123",
+        role: "owner"
+      },
+      expectedCode: "schema_validation_failed"
     });
 
     await expect(
@@ -225,6 +244,11 @@ describe("schema validation", () => {
 
     const token = await LooseToken.seal({ userId: 123 });
     const result = await StrictToken.unseal(token);
+
+    logTestStep("schema.reject-after-decrypt", {
+      token: summarizeToken(token),
+      result: summarizeResult(result)
+    });
 
     expect(result.ok).toBe(false);
 
