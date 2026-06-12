@@ -1,6 +1,6 @@
 {
   "name": "stateless-seal",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Purpose-bound sealed tokens for JavaScript.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -21,6 +21,11 @@
       "types": "./dist/testing.d.ts",
       "import": "./dist/testing.js",
       "require": "./dist/testing.cjs"
+    },
+    "./cookie-session": {
+      "types": "./dist/cookie-session.d.ts",
+      "import": "./dist/cookie-session.js",
+      "require": "./dist/cookie-session.cjs"
     }
   },
   "files": [

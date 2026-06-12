@@ -1,6 +1,15 @@
-import type { UnsealResult } from "../src";
-
 const LOG_ENV_NAMES = ["STSEAL_TEST_LOGS", "STATELESS_SEAL_TEST_LOGS"];
+
+type ResultLike<TPayload> =
+  | {
+      ok: true;
+      payload: TPayload;
+      meta?: unknown;
+    }
+  | {
+      ok: false;
+      code: string;
+    };
 
 export function logTestStep(label: string, value?: unknown): void {
   if (!isEnabled()) {
@@ -18,9 +27,7 @@ export function logTestStep(label: string, value?: unknown): void {
   );
 }
 
-export function summarizeResult<TPayload>(
-  result: UnsealResult<TPayload>
-): unknown {
+export function summarizeResult<TPayload>(result: ResultLike<TPayload>): unknown {
   if (!result.ok) {
     return {
       ok: false,
@@ -31,7 +38,7 @@ export function summarizeResult<TPayload>(
   return {
     ok: true,
     payload: result.payload,
-    meta: result.meta
+    ...(result.meta !== undefined ? { meta: result.meta } : {})
   };
 }
 

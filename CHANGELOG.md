@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0
+
+- Add `stateless-seal/cookie-session` subpath export.
+- Add `createCookieSession()` for framework-agnostic sealed session cookies.
+- Add secure cookie defaults for session commits and clears.
+- Add cookie session docs and test coverage.
+
 ## 0.4.0
 
 - Add `stateless-seal/testing` subpath export.

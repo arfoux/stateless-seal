@@ -160,6 +160,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
+- [docs/cookie-session.md](./docs/cookie-session.md) - framework-agnostic cookie sessions
 - [docs/testing.md](./docs/testing.md) - test clock and test sealer helpers
 - [CHANGELOG.md](./CHANGELOG.md) - release history
 
@@ -583,6 +584,44 @@ const tokenFromCookie = getCookie(request.headers.get("Cookie"), "session");
 ```
 
 `maxAge` is expressed in seconds, following the `Set-Cookie` `Max-Age` attribute.
+
+---
+
+## Cookie sessions
+
+Cookie session helpers are available from the `stateless-seal/cookie-session`
+subpath.
+
+```ts
+import { createCookieSession } from "stateless-seal/cookie-session";
+
+const SessionToken = sealer.defineToken<{ userId: string }>({
+  purpose: "session",
+  ttl: "1h",
+  audience: "web"
+});
+
+const session = createCookieSession({
+  token: SessionToken,
+  cookieName: "__Host-session"
+});
+
+const setCookie = await session.commit({
+  userId: "user_123"
+});
+
+const result = await session.read(request);
+
+if (!result.ok) {
+  return new Response("Unauthorized", { status: 401 });
+}
+```
+
+`createCookieSession()` defaults to `HttpOnly`, `Secure`, `SameSite=Lax`, and
+`Path=/`. It accepts raw `Cookie` headers, `Headers`-like objects, and
+request-like objects with `.headers`.
+
+See [docs/cookie-session.md](./docs/cookie-session.md).
 
 ---
 
@@ -1106,7 +1145,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.4.0.
+This is v0.5.0.
 
 Included:
 
@@ -1132,6 +1171,7 @@ Included:
 - `cloudflareKVReplayStore()`
 - `createTestClock()`
 - `createTestSealer()`
+- `createCookieSession()`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1194,6 +1234,14 @@ Testing and application DX.
 - `stateless-seal/testing` subpath
 - `createTestClock()`
 - `createTestSealer()`
+
+### v0.5
+
+Cookie session DX.
+
+- `stateless-seal/cookie-session` subpath
+- `createCookieSession()`
+- framework-agnostic session cookie helper
 
 ### v1.0
 
