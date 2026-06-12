@@ -160,6 +160,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [TEST-VECTORS.md](./TEST-VECTORS.md) - official compatibility vectors
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
+- [docs/cli.md](./docs/cli.md) - keygen and unverified inspect CLI
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
 - [docs/cookie-session.md](./docs/cookie-session.md) - framework-agnostic cookie sessions
@@ -172,6 +173,14 @@ These limits are guardrails for logs, headers, and edge runtimes.
 ## Quick start
 
 ### 1. Generate a key
+
+With the CLI:
+
+```bash
+npx stateless-seal keygen
+```
+
+Or from code:
 
 ```ts
 import { generateSealKey } from "stateless-seal";
@@ -1148,7 +1157,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.6.0.
+This is v0.7.0.
 
 Included:
 
@@ -1176,6 +1185,8 @@ Included:
 - `createTestSealer()`
 - `createCookieSession()`
 - official recipes
+- CLI `keygen`
+- CLI `inspect`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1257,6 +1268,13 @@ Recipes and production guidance.
 - invite link recipe
 - temporary download grant recipe
 - session cookie recipe
+
+### v0.7
+
+CLI basics.
+
+- `stateless-seal keygen`
+- `stateless-seal inspect`
 
 ### v1.0
 

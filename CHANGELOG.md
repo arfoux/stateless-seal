@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0
+
+- Add `stateless-seal` CLI binary.
+- Add `stateless-seal keygen`.
+- Add `stateless-seal inspect <token>` for unverified public metadata.
+- Add `--json` output for token inspection.
+- Add CLI docs and test coverage.
+
 ## 0.6.0
 
 - Add official recipe docs for password reset, magic links, email
