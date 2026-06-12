@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Add official recipe docs for password reset, magic links, email
+  verification, invite links, temporary download grants, and session cookies.
+- Add recipe index under `docs/recipes/`.
+- Add framework-agnostic password reset and session cookie examples.
+- Document production usage guidance for purpose separation, short TTLs,
+  replay stores, and request-context checks.
+
 ## 0.5.0
 
 - Add `stateless-seal/cookie-session` subpath export.

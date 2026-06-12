@@ -99,6 +99,8 @@ const SessionToken = sealer.defineToken({
 
 A token created for `password-reset` cannot be accepted as a `session` token.
 
+See [docs/recipes](./docs/recipes/README.md) for full flow examples.
+
 ---
 
 ## Installation
@@ -162,6 +164,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
 - [docs/cookie-session.md](./docs/cookie-session.md) - framework-agnostic cookie sessions
 - [docs/testing.md](./docs/testing.md) - test clock and test sealer helpers
+- [docs/recipes](./docs/recipes/README.md) - password reset, magic link, invite, download, and session recipes
 - [CHANGELOG.md](./CHANGELOG.md) - release history
 
 ---
@@ -1145,7 +1148,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.5.0.
+This is v0.6.0.
 
 Included:
 
@@ -1172,6 +1175,7 @@ Included:
 - `createTestClock()`
 - `createTestSealer()`
 - `createCookieSession()`
+- official recipes
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1242,6 +1246,17 @@ Cookie session DX.
 - `stateless-seal/cookie-session` subpath
 - `createCookieSession()`
 - framework-agnostic session cookie helper
+
+### v0.6
+
+Recipes and production guidance.
+
+- password reset recipe
+- magic link recipe
+- email verification recipe
+- invite link recipe
+- temporary download grant recipe
+- session cookie recipe
 
 ### v1.0
 
