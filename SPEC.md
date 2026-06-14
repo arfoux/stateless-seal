@@ -1,8 +1,8 @@
 # Stateless Seal v1 Specification
 
-This document specifies the Stateless Seal v1 token format and validation
-rules. The npm package may still be pre-1.0, but the token format described
-here is the protocol contract for `stseal.v1` tokens.
+This document specifies the stable Stateless Seal v1 token format and
+validation rules. The format described here is the protocol contract for
+`stseal.v1` tokens.
 
 Stateless Seal creates compact, encrypted, purpose-bound tokens for
 application-controlled flows such as password reset, magic links, email

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0
+
+- Declare the Stateless Seal v1 token format stable.
+- Add `STABILITY.md` with the v1 compatibility policy.
+- Add `MIGRATION.md` for v0.9.x to v1.0.0.
+- Update `SECURITY.md` with v1 support status.
+- Update `SPEC.md` wording for the stable v1 protocol contract.
+
 ## 0.9.0
 
 - Add GitHub Actions CI for Node.js 18, 20, and 22.

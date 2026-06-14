@@ -2,10 +2,12 @@
 
 ## Supported Versions
 
-`stateless-seal` is currently pre-1.0. Security fixes are intended for the
-latest published minor version.
+| Version | Supported |
+| ------- | --------- |
+| 1.x     | Yes       |
+| 0.x     | No        |
 
-Once v1.0 is released, supported versions will be listed here explicitly.
+Security fixes are intended for the latest published v1 release.
 
 ## Reporting a Vulnerability
 

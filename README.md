@@ -158,6 +158,8 @@ These limits are guardrails for logs, headers, and edge runtimes.
 
 - [SPEC.md](./SPEC.md) - Stateless Seal v1 token format
 - [TEST-VECTORS.md](./TEST-VECTORS.md) - official compatibility vectors
+- [STABILITY.md](./STABILITY.md) - v1 compatibility and stability policy
+- [MIGRATION.md](./MIGRATION.md) - migration guide
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/cli.md](./docs/cli.md) - keygen and unverified inspect CLI
@@ -1161,7 +1163,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.9.0.
+This is v1.0.0.
 
 Included:
 
@@ -1194,6 +1196,8 @@ Included:
 - error handling guidance
 - runtime support documentation
 - GitHub Actions CI
+- stable v1 token format guarantee
+- v1 API stability policy
 - CLI `keygen`
 - CLI `inspect`
 - edge-safe cookie helpers
@@ -1207,7 +1211,7 @@ Included:
 - TypeScript types
 - zero runtime dependencies
 
-Not included yet:
+Future work:
 
 - Redis/Upstash replay store
 - strongly consistent Cloudflare Durable Object replay store
@@ -1304,12 +1308,15 @@ Runtime and CI readiness.
 
 ### v1.0
 
-Stable production API.
+Stable production API and format freeze.
 
-- Redis/Upstash adapter
-- strongly consistent Cloudflare Durable Object replay store
 - stable token format guarantee
 - production API freeze
+- migration guide
+- stability policy
+
+Future minor versions may add optional adapters and CLI commands without
+changing the `stseal.v1` format.
 
 ---
 
