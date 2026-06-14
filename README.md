@@ -127,8 +127,11 @@ Supported targets include:
 - Vercel Edge
 - Deno
 - Bun
-- Node.js 18+
+- Node.js 18+ when Web Crypto is exposed as `globalThis.crypto`
 - modern browsers with Web Crypto
+
+On Node.js 18, some environments require `--experimental-global-webcrypto`.
+The core package does not import `node:crypto` so edge runtimes stay eligible.
 
 ---
 
@@ -1301,7 +1304,8 @@ Production readiness docs.
 
 Runtime and CI readiness.
 
-- Node.js 18 / 20 / 22 CI matrix
+- Node.js 20 / 22 full CI matrix
+- Node.js 18 runtime smoke checks
 - package export smoke checks
 - CLI smoke checks
 - runtime support docs

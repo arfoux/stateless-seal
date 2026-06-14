@@ -1,3 +1,5 @@
+import { getWebCrypto } from "./webcrypto";
+
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   const copy = new Uint8Array(bytes.byteLength);
   copy.set(bytes);
@@ -16,7 +18,8 @@ export async function aesGcmEncrypt(params: {
   plaintext: Uint8Array;
   aad: Uint8Array;
 }): Promise<Uint8Array> {
-  const encrypted = await crypto.subtle.encrypt(
+  const webCrypto = getWebCrypto();
+  const encrypted = await webCrypto.subtle.encrypt(
     {
       name: "AES-GCM",
       iv: toUint8ArrayBuffer(params.iv),
@@ -36,7 +39,8 @@ export async function aesGcmDecrypt(params: {
   ciphertext: Uint8Array;
   aad: Uint8Array;
 }): Promise<Uint8Array> {
-  const decrypted = await crypto.subtle.decrypt(
+  const webCrypto = getWebCrypto();
+  const decrypted = await webCrypto.subtle.decrypt(
     {
       name: "AES-GCM",
       iv: toUint8ArrayBuffer(params.iv),

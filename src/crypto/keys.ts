@@ -1,6 +1,7 @@
 import { base64urlDecode, base64urlEncode } from "../token/base64url";
 import type { SealKeyInput } from "../core/types";
 import { SealError } from "../core/errors";
+import { getWebCrypto } from "./webcrypto";
 
 type KeyUsageMode = "seal" | "unseal";
 
@@ -39,7 +40,7 @@ export async function importAesGcmKey(
   }
 
   try {
-    return await crypto.subtle.importKey(
+    return await getWebCrypto().subtle.importKey(
       "raw",
       toArrayBuffer(raw),
       {
@@ -78,6 +79,6 @@ function validateCryptoKey(key: CryptoKey, usage: KeyUsageMode) {
 
 export function generateSealKey(): string {
   const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
+  getWebCrypto().getRandomValues(bytes);
   return base64urlEncode(bytes);
 }

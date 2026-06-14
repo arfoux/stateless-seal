@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+
+- Keep the release on modern Vitest tooling.
+- Split CI so the full internal test suite runs on Node.js 20 and 22.
+- Add a dedicated Node.js 18 runtime smoke job for built package exports,
+  seal/unseal behavior, and CLI commands.
+- Access Web Crypto through `globalThis.crypto` for clearer ESM runtime
+  behavior.
+- Update runtime support docs to distinguish runtime support from test-runner
+  support.
+
 ## 1.0.0
 
 - Declare the Stateless Seal v1 token format stable.

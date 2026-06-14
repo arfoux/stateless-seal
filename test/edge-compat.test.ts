@@ -10,6 +10,7 @@ const FORBIDDEN_RUNTIME_PATTERNS = [
   /from\s+["']path["']/,
   /from\s+["']os["']/,
   /from\s+["']crypto["']/,
+  /(?<!globalThis\.)\bcrypto\./,
   /\brequire\s*\(/
 ];
 

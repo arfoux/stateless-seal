@@ -1,6 +1,6 @@
 {
   "name": "stateless-seal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Purpose-bound sealed tokens for JavaScript.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -78,6 +78,6 @@
     "@types/node": "^25.9.1",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.8"
   }
 }

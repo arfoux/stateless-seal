@@ -38,7 +38,7 @@ eligibility of the core SDK or subpath exports.
 
 ## CI Coverage
 
-The GitHub Actions workflow runs:
+The GitHub Actions workflow runs the full development test suite:
 
 ```bash
 npm ci
@@ -50,9 +50,22 @@ npm pack --dry-run
 
 on:
 
-- Node.js 18
 - Node.js 20
 - Node.js 22
+
+It also runs a dedicated Node.js 18 runtime smoke check. That job builds the
+package, imports every public subpath export, seals and unseals a token, and
+runs the CLI help/keygen commands with Node.js 18 Web Crypto enabled.
+
+Node.js 18 is tested this way because the package runtime supports Node.js 18,
+while current Vitest/Rolldown development tooling requires newer Node.js APIs
+for the full internal test runner.
+
+Node.js 18 applications must expose Web Crypto as `globalThis.crypto`. If your
+Node.js 18 environment does not expose it by default, run with
+`--experimental-global-webcrypto` or install the runtime's Web Crypto global
+before using `stateless-seal`. The core package intentionally does not import
+`node:crypto`, because edge runtimes must remain eligible.
 
 It also smoke-checks the built package exports:
 
