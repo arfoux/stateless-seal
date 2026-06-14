@@ -161,6 +161,7 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
 - [docs/cli.md](./docs/cli.md) - keygen and unverified inspect CLI
+- [docs/runtime-support.md](./docs/runtime-support.md) - runtime targets and CI coverage
 - [docs/key-management.md](./docs/key-management.md) - key generation, storage, and rotation
 - [docs/error-handling.md](./docs/error-handling.md) - safe public and server-side errors
 - [docs/production-checklist.md](./docs/production-checklist.md) - production deployment checklist
@@ -1160,7 +1161,7 @@ payload.userId;
 
 ## Current status
 
-This is v0.8.0.
+This is v0.9.0.
 
 Included:
 
@@ -1191,6 +1192,8 @@ Included:
 - key management guidance
 - production checklist
 - error handling guidance
+- runtime support documentation
+- GitHub Actions CI
 - CLI `keygen`
 - CLI `inspect`
 - edge-safe cookie helpers
@@ -1289,6 +1292,15 @@ Production readiness docs.
 - key management guide
 - error handling guide
 - production checklist
+
+### v0.9
+
+Runtime and CI readiness.
+
+- Node.js 18 / 20 / 22 CI matrix
+- package export smoke checks
+- CLI smoke checks
+- runtime support docs
 
 ### v1.0
 

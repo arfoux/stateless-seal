@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+- Add GitHub Actions CI for Node.js 18, 20, and 22.
+- Add package smoke checks for built subpath exports.
+- Add CLI smoke checks in CI.
+- Add runtime support documentation.
+- Document what runtime CI does and does not prove.
+
 ## 0.8.0
 
 - Add key management guidance.
