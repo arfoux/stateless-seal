@@ -165,13 +165,14 @@ These limits are guardrails for logs, headers, and edge runtimes.
 - [MIGRATION.md](./MIGRATION.md) - migration guide
 - [THREAT-MODEL.md](./THREAT-MODEL.md) - guarantees, assumptions, and non-goals
 - [SECURITY.md](./SECURITY.md) - vulnerability reporting and security scope
-- [docs/cli.md](./docs/cli.md) - keygen and unverified inspect CLI
+- [docs/cli.md](./docs/cli.md) - keygen, inspect, seal, and unseal CLI
 - [docs/runtime-support.md](./docs/runtime-support.md) - runtime targets and CI coverage
 - [docs/key-management.md](./docs/key-management.md) - key generation, storage, and rotation
 - [docs/error-handling.md](./docs/error-handling.md) - safe public and server-side errors
 - [docs/production-checklist.md](./docs/production-checklist.md) - production deployment checklist
 - [docs/replay-protection.md](./docs/replay-protection.md) - one-time token guidance
 - [docs/cloudflare-workers.md](./docs/cloudflare-workers.md) - Workers KV replay store recipe
+- [docs/upstash-redis.md](./docs/upstash-redis.md) - Upstash Redis replay store
 - [docs/cookie-session.md](./docs/cookie-session.md) - framework-agnostic cookie sessions
 - [docs/testing.md](./docs/testing.md) - test clock and test sealer helpers
 - [docs/recipes](./docs/recipes/README.md) - password reset, magic link, invite, download, and session recipes
@@ -1166,7 +1167,7 @@ payload.userId;
 
 ## Current status
 
-This is v1.1.0.
+This is v1.2.0.
 
 Included:
 
@@ -1190,6 +1191,7 @@ Included:
 - `ReplayStore`
 - `memoryReplayStore()`
 - `cloudflareKVReplayStore()`
+- `upstashRedisReplayStore()`
 - `createTestClock()`
 - `createTestSealer()`
 - `createCookieSession()`
@@ -1218,7 +1220,6 @@ Included:
 
 Future work:
 
-- Redis/Upstash replay store
 - strongly consistent Cloudflare Durable Object replay store
 - refresh token flow
 
@@ -1327,6 +1328,14 @@ CLI workflow expansion.
 - CLI `seal`
 - CLI `unseal`
 - CLI JSON unseal output
+
+### v1.2
+
+Replay adapter expansion.
+
+- `stateless-seal/upstash` subpath export
+- `upstashRedisReplayStore()`
+- dependency-free Upstash Redis REST replay store
 
 Future minor versions may add optional adapters and CLI commands without
 changing the `stseal.v1` format.

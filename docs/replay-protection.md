@@ -124,6 +124,18 @@ but it is not a strict global atomic consume primitive under simultaneous
 submissions. Use a strongly consistent store for high-value flows that require
 exactly-once behavior under concurrency.
 
+Upstash Redis support is available through:
+
+```ts
+import { upstashRedisReplayStore } from "stateless-seal/upstash";
+```
+
+The Upstash adapter uses Redis `SET key value EX ttl NX` through the Upstash
+REST API, so consumption is atomic in Redis and works in edge runtimes with
+`fetch`.
+
+See [upstash-redis.md](./upstash-redis.md).
+
 ## Production Rules
 
 - Keep one-time token TTLs short.

@@ -71,6 +71,7 @@ jobs:
           node --experimental-global-webcrypto --input-type=module <<'NODE'
           const root = await import("./dist/index.js");
           const cloudflare = await import("./dist/cloudflare.js");
+          const upstash = await import("./dist/upstash.js");
           const testing = await import("./dist/testing.js");
           const cookieSession = await import("./dist/cookie-session.js");
 
@@ -84,6 +85,10 @@ jobs:
 
           if (typeof cloudflare.cloudflareKVReplayStore !== "function") {
             throw new Error("Missing cloudflareKVReplayStore export.");
+          }
+
+          if (typeof upstash.upstashRedisReplayStore !== "function") {
+            throw new Error("Missing upstashRedisReplayStore export.");
           }
 
           if (typeof testing.createTestSealer !== "function") {
@@ -148,6 +153,7 @@ jobs:
           node --input-type=module <<'NODE'
           const root = await import("./dist/index.js");
           const cloudflare = await import("./dist/cloudflare.js");
+          const upstash = await import("./dist/upstash.js");
           const testing = await import("./dist/testing.js");
           const cookieSession = await import("./dist/cookie-session.js");
 
@@ -157,6 +163,10 @@ jobs:
 
           if (typeof cloudflare.cloudflareKVReplayStore !== "function") {
             throw new Error("Missing cloudflareKVReplayStore export.");
+          }
+
+          if (typeof upstash.upstashRedisReplayStore !== "function") {
+            throw new Error("Missing upstashRedisReplayStore export.");
           }
 
           if (typeof testing.createTestSealer !== "function") {

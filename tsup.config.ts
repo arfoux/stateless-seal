@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/cloudflare.ts",
+    "src/upstash.ts",
     "src/testing.ts",
     "src/cookie-session.ts"
   ],

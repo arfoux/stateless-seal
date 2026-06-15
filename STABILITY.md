@@ -26,6 +26,7 @@ The following are stable for the v1 line:
 - public subpath exports:
   - `stateless-seal`
   - `stateless-seal/cloudflare`
+  - `stateless-seal/upstash`
   - `stateless-seal/testing`
   - `stateless-seal/cookie-session`
 - CLI commands:

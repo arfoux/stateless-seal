@@ -71,6 +71,7 @@ It also smoke-checks the built package exports:
 
 - `stateless-seal`
 - `stateless-seal/cloudflare`
+- `stateless-seal/upstash`
 - `stateless-seal/testing`
 - `stateless-seal/cookie-session`
 

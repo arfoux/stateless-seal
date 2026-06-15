@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Add `stateless-seal/upstash` subpath export.
+- Add `upstashRedisReplayStore()` for Upstash Redis REST replay markers.
+- Use Redis `SET key value EX ttl NX` for atomic one-time token consumption.
+- Add Upstash Redis replay store docs and test coverage.
+- Include the Upstash subpath in package smoke checks.
+
 ## 1.1.0
 
 - Add `stateless-seal seal` for sealing JSON payloads from the CLI.
