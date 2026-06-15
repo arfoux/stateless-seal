@@ -323,5 +323,5 @@ The v1 protocol is designed for Web Crypto compatible runtimes, including:
 - Vercel Edge
 - Deno
 - Bun
-- Node.js 18+
+- Node.js 18+ when Web Crypto is exposed as `globalThis.crypto`
 - modern browsers with Web Crypto

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
 import { logTestStep } from "./debug-log";
@@ -11,6 +11,7 @@ const PACKAGE_VERSION = (
 ).version;
 
 type Vector = {
+  key: string;
   token: string;
 };
 
@@ -37,6 +38,8 @@ describe("CLI", () => {
     expect(stdout).toContain("stateless-seal");
     expect(stdout).toContain("keygen");
     expect(stdout).toContain("inspect");
+    expect(stdout).toContain("seal");
+    expect(stdout).toContain("unseal");
   });
 
   it("generates a base64url 32-byte key", async () => {
@@ -91,6 +94,192 @@ describe("CLI", () => {
       purpose: "password-reset",
       issuer: "example-app",
       verified: false
+    });
+  });
+
+  it("seals and unseals a JSON payload", async () => {
+    const vector = JSON.parse(
+      readFileSync("test-vectors/v1/valid-basic.json", "utf8")
+    ) as Vector;
+    const { stdout: sealStdout } = await runCli([
+      "seal",
+      "--key",
+      vector.key,
+      "--kid",
+      "2026-05",
+      "--issuer",
+      "example-app",
+      "--purpose",
+      "password-reset",
+      "--audience",
+      "web",
+      "--ttl",
+      "5m",
+      "--payload",
+      "{\"userId\":\"user_123\"}"
+    ]);
+    const token = sealStdout.trim();
+
+    const { stdout: unsealStdout } = await runCli([
+      "unseal",
+      token,
+      "--key",
+      vector.key,
+      "--issuer",
+      "example-app",
+      "--purpose",
+      "password-reset",
+      "--audience",
+      "web"
+    ]);
+    const payload = JSON.parse(unsealStdout) as { userId: string };
+
+    logTestStep("cli.seal-unseal", {
+      tokenPrefix: token.slice(0, 11),
+      payload
+    });
+
+    expect(token).toMatch(/^stseal\.v1\./);
+    expect(payload).toEqual({
+      userId: "user_123"
+    });
+  });
+
+  it("unseals a JSON payload with metadata output", async () => {
+    const vector = JSON.parse(
+      readFileSync("test-vectors/v1/valid-basic.json", "utf8")
+    ) as Vector;
+    const { stdout: sealStdout } = await runCli([
+      "seal",
+      "--key",
+      vector.key,
+      "--kid",
+      "2026-05",
+      "--issuer",
+      "example-app",
+      "--purpose",
+      "password-reset",
+      "--ttl",
+      "5m",
+      "--payload",
+      "{\"userId\":\"user_123\"}"
+    ]);
+    const token = sealStdout.trim();
+    const { stdout } = await runCli([
+      "unseal",
+      token,
+      "--key",
+      vector.key,
+      "--issuer",
+      "example-app",
+      "--purpose",
+      "password-reset",
+      "--json"
+    ]);
+    const output = JSON.parse(stdout) as {
+      ok: boolean;
+      payload: { userId: string };
+      meta: {
+        keyId: string;
+        purpose: string;
+        issuer: string;
+      };
+    };
+
+    logTestStep("cli.unseal-json", output);
+
+    expect(output).toMatchObject({
+      ok: true,
+      payload: {
+        userId: "user_123"
+      },
+      meta: {
+        keyId: "2026-05",
+        purpose: "password-reset",
+        issuer: "example-app"
+      }
+    });
+  });
+
+  it("seals a JSON payload from a file", async () => {
+    const vector = JSON.parse(
+      readFileSync("test-vectors/v1/valid-basic.json", "utf8")
+    ) as Vector;
+    const payloadPath = "cli-payload.tmp.json";
+
+    writeFileSync(payloadPath, "{\"userId\":\"user_file\"}", "utf8");
+
+    try {
+      const { stdout: sealStdout } = await runCli([
+        "seal",
+        "--key",
+        vector.key,
+        "--kid",
+        "2026-05",
+        "--issuer",
+        "example-app",
+        "--purpose",
+        "password-reset",
+        "--ttl",
+        "5m",
+        "--payload-file",
+        payloadPath
+      ]);
+      const { stdout } = await runCli([
+        "unseal",
+        sealStdout.trim(),
+        "--key",
+        vector.key,
+        "--issuer",
+        "example-app",
+        "--purpose",
+        "password-reset"
+      ]);
+      const payload = JSON.parse(stdout) as { userId: string };
+
+      logTestStep("cli.seal-payload-file", payload);
+
+      expect(payload).toEqual({
+        userId: "user_file"
+      });
+    } finally {
+      unlinkSync(payloadPath);
+    }
+  });
+
+  it("returns a non-zero exit for a CLI binding mismatch", async () => {
+    const vector = JSON.parse(
+      readFileSync("test-vectors/v1/valid-basic.json", "utf8")
+    ) as Vector;
+    const { stdout } = await runCli([
+      "seal",
+      "--key",
+      vector.key,
+      "--kid",
+      "2026-05",
+      "--issuer",
+      "example-app",
+      "--purpose",
+      "password-reset",
+      "--ttl",
+      "5m",
+      "--payload",
+      "{\"userId\":\"user_123\"}"
+    ]);
+
+    await expect(
+      runCli([
+        "unseal",
+        stdout.trim(),
+        "--key",
+        vector.key,
+        "--issuer",
+        "example-app",
+        "--purpose",
+        "session"
+      ])
+    ).rejects.toMatchObject({
+      stderr: expect.stringContaining("purpose_mismatch")
     });
   });
 

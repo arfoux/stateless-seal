@@ -1166,7 +1166,7 @@ payload.userId;
 
 ## Current status
 
-This is v1.0.0.
+This is v1.1.0.
 
 Included:
 
@@ -1203,6 +1203,8 @@ Included:
 - v1 API stability policy
 - CLI `keygen`
 - CLI `inspect`
+- CLI `seal`
+- CLI `unseal`
 - edge-safe cookie helpers
 - AES-GCM encryption
 - Web Crypto API
@@ -1219,7 +1221,6 @@ Future work:
 - Redis/Upstash replay store
 - strongly consistent Cloudflare Durable Object replay store
 - refresh token flow
-- CLI `seal` / `unseal` commands
 
 ---
 
@@ -1318,6 +1319,14 @@ Stable production API and format freeze.
 - production API freeze
 - migration guide
 - stability policy
+
+### v1.1
+
+CLI workflow expansion.
+
+- CLI `seal`
+- CLI `unseal`
+- CLI JSON unseal output
 
 Future minor versions may add optional adapters and CLI commands without
 changing the `stseal.v1` format.

@@ -31,6 +31,8 @@ The following are stable for the v1 line:
 - CLI commands:
   - `stateless-seal keygen`
   - `stateless-seal inspect`
+  - `stateless-seal seal`
+  - `stateless-seal unseal`
   - `stateless-seal version`
 
 ---

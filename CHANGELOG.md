@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+- Add `stateless-seal seal` for sealing JSON payloads from the CLI.
+- Add `stateless-seal unseal` for verifying and decrypting tokens from the CLI.
+- Add `--payload-file` for shell-friendly CLI sealing.
+- Add `--json` output for CLI unseal metadata and payloads.
+- Document CLI seal/unseal usage and security boundaries.
+- Add CLI test coverage for roundtrip sealing, JSON output, and binding
+  mismatch rejection.
+
 ## 1.0.1
 
 - Keep the release on modern Vitest tooling.
