@@ -1,7 +1,7 @@
 {
   "name": "stateless-seal",
   "version": "1.2.0",
-  "description": "Purpose-bound sealed tokens for JavaScript.",
+  "description": "Encrypted AES-GCM sealed tokens for password reset, magic links, email verification & session cookies — purpose-bound, Web Crypto, edge-ready",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -65,13 +65,14 @@
   "keywords": [
     "token",
     "sealed-token",
-    "stateless",
+    "password-reset",
     "encryption",
     "aes-gcm",
     "webcrypto",
     "purpose-bound",
     "session",
-    "security"
+    "security",
+    "magic-link"
   ],
   "author": "Fatih Farros",
   "license": "MIT",

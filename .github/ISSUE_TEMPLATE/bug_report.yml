@@ -1,0 +1,34 @@
+name: Bug Report
+description: Report a bug in stateless-seal
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: e.g. 1.2.0
+      placeholder: 1.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      options: [Node.js, Cloudflare Workers, Vercel Edge, Deno, Bun, Browser, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal code + expected vs actual
+      placeholder: |
+        const token = await Token.seal({...})
+        const result = await Token.unseal(token)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error
+      render: shell

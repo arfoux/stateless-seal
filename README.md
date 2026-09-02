@@ -8,7 +8,7 @@
 
 > **Encrypted, purpose-bound, stateless tokens for JavaScript — AES-GCM + Web Crypto, no database needed.**
 
-**Available on npm: https://www.npmjs.com/package/stateless-seal**
+**Available on npm: [https://www.npmjs.com/package/stateless-seal](https://www.npmjs.com/package/stateless-seal)**
 
 `stateless-seal` creates compact `stseal.v1.<header>.<iv>.<ciphertext>` tokens with explicit `purpose`, `issuer`, `audience`, `expiry`, and `key rotation`. A token sealed for `password-reset` cannot be opened as `session`. Payload is **encrypted**, not just signed.
 
@@ -34,7 +34,7 @@ const result = await PasswordResetToken.unseal(token);
 if (result.ok) console.log(result.payload.userId);
 ```
 
-- **Install:** https://www.npmjs.com/package/stateless-seal
+- **Install:** [https://www.npmjs.com/package/stateless-seal](https://www.npmjs.com/package/stateless-seal)
 - **Docs:** [`SPEC.md`](./SPEC.md) · [`docs/recipes`](./docs/recipes/README.md) · [`SECURITY.md`](./SECURITY.md)
 - **GitHub:** https://github.com/arfoux/stateless-seal
 
@@ -54,7 +54,7 @@ That's what `stateless-seal` does.
 
 ## Installation
 
-**npm:** https://www.npmjs.com/package/stateless-seal
+**npm:** [https://www.npmjs.com/package/stateless-seal](https://www.npmjs.com/package/stateless-seal)
 
 ```bash
 npm install stateless-seal
@@ -174,4 +174,4 @@ Full index in [docs/](./docs/).
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Package on npm: https://www.npmjs.com/package/stateless-seal
+MIT — see [LICENSE](./LICENSE). Package on npm: [https://www.npmjs.com/package/stateless-seal](https://www.npmjs.com/package/stateless-seal)
