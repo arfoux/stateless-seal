@@ -1,6 +1,6 @@
 {
   "name": "stateless-seal",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Encrypted AES-GCM sealed tokens for password reset, magic links, email verification & session cookies — purpose-bound, Web Crypto, edge-ready",
   "type": "module",
   "main": "./dist/index.cjs",

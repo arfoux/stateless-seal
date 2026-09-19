@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- Publish: also ships `@arfoux/stateless-seal` to GitHub Packages (npmjs `stateless-seal` unchanged).
+
 ## 1.2.0
 
 - Add `stateless-seal/upstash` subpath export.
